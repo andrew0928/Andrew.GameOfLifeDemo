@@ -72,6 +72,21 @@ namespace GameHost1
         {
             // TODO: fill your code here
 
+#if (DEBUG)
+            if (area.GetLength(0) != 3) throw new ArgumentException();
+            if (area.GetLength(1) != 3) throw new ArgumentException();
+#endif
+
+            bool current = area[1, 1];
+            int live_count = 0;
+
+            foreach (bool x in area) live_count += (x ? 1 : 0);
+            if (current) live_count -= 1;
+
+            if (current && live_count < 2) return false;
+            if (current && (live_count == 2 || live_count == 3)) return true;
+            if (current && live_count > 3) return false;
+            if (!current && live_count == 3) return true;
 
             return false;
         }
