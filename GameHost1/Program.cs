@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 
 namespace GameHost1
@@ -10,7 +11,7 @@ namespace GameHost1
             bool[,] matrix = new bool[50, 50];
             bool[,] area = new bool[3, 3];
 
-            Init(matrix);
+            Init(matrix, 10);
 
             for (int count = 0; count < 5000; count++)
             {
@@ -22,22 +23,10 @@ namespace GameHost1
                 {
                     for (int x = 0; x < matrix.GetLength(1); x++)
                     {
-                        // clone area
-                        for (int ay = 0; ay < 3; ay++)
-                        {
-                            for (int ax = 0; ax < 3; ax++)
-                            {
-                                int cx = x - 1 + ax;
-                                int cy = y - 1 + ay;
+                        var cell = new Life(matrix[x, y], (x, y));
+                        var mapcx = new MapContext(matrix, cell);
+                        matrix[x, y] = cell.NextCycle(mapcx);
 
-                                if (cx < 0) area[ax, ay] = false;
-                                else if (cy < 0) area[ax, ay] = false;
-                                else if (cx >= matrix.GetLength(1)) area[ax, ay] = false;
-                                else if (cy >= matrix.GetLength(0)) area[ax, ay] = false;
-                                else area[ax, ay] = matrix[cx, cy];
-                            }
-                        }
-                        matrix[x, y] = TimePassRule(area);
                         Console.Write(matrix[x, y]? '★' : '☆');
                         if (matrix[x, y]) live_count++;
                     }
@@ -48,10 +37,9 @@ namespace GameHost1
         }
 
 
-        static void Init(bool[,] matrix)
+        static void Init(bool[,] matrix, int rate = 20)
         {
             Random rnd = new Random();
-            int rate = 20;
 
             for (int y = 0; y < matrix.GetLength(0); y++)
             {
@@ -61,34 +49,88 @@ namespace GameHost1
                 }
             }
         }
+    }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="area">must be bool[3, 3]</param>
-        /// <returns></returns>
-        static bool TimePassRule(bool[,] area)
+    internal class Life
+    {
+        public bool IsLive { get; private set; }
+        public (int x, int y) Position { get; private set; }
+        
+
+        public Life(bool status, (int x, int y) position)
         {
-            // TODO: fill your code here
+            this.IsLive = status;
+            this.Position = position;
+        }
 
-#if (DEBUG)
-            if (area.GetLength(0) != 3) throw new ArgumentException();
-            if (area.GetLength(1) != 3) throw new ArgumentException();
-#endif
+        private static Dictionary<bool, bool[]> _gameRules = new Dictionary<bool, bool[]>()
+        {
+            { true,  new bool[] { false, false, true, true, false, false, false, false, false } },
+            { false, new bool[] { false, false, false,true, false, false, false, false, false } },
+        };
 
-            bool current = area[1, 1];
+        public bool NextCycle(MapContext mcx)
+        {
             int live_count = 0;
 
-            foreach (bool x in area) live_count += (x ? 1 : 0);
-            if (current) live_count -= 1;
+            foreach(var n in mcx.SearchLivesAroundMe())
+            {
+                if (n == null) continue;
+                if (n.IsLive) live_count++;
+            }
 
-            if (current && live_count < 2) return false;
-            if (current && (live_count == 2 || live_count == 3)) return true;
-            if (current && live_count > 3) return false;
-            if (!current && live_count == 3) return true;
+            return _gameRules[this.IsLive][live_count];
+        }
+    }
 
-            return false;
+    internal class MapContext
+    {
+        private bool[,] _world;
+        private Life _target;
+
+        public MapContext(bool[,] world, Life target)
+        {
+            this._world = world;
+            this._target = target;
+        }
+
+        public bool TrySeeAround(int rel_x, int rel_y, out Life cell)
+        {
+            // 由環境決定: 只能看到周圍一格的狀態
+            if (rel_x < -1 || rel_x > 1) throw new ArgumentOutOfRangeException();
+            if (rel_y < -1 || rel_y > 1) throw new ArgumentOutOfRangeException();
+
+            try
+            {
+                int x = this._target.Position.x + rel_x;
+                int y = this._target.Position.y + rel_y;
+
+                cell = new Life(this._world[x, y], (x, y));
+                return true;
+            }
+            catch(IndexOutOfRangeException)
+            {
+                cell = null;
+                return false;
+            }
+        }
+
+        public IEnumerable<Life> SearchLivesAroundMe()
+        {
+            Life curlife = null;
+
+            if (this.TrySeeAround(-1, -1, out curlife)) { yield return curlife; }    // 左上
+            if (this.TrySeeAround( 0, -1, out curlife)) { yield return curlife; }    // 中上
+            if (this.TrySeeAround( 1, -1, out curlife)) { yield return curlife; }    // 右上
+
+            if (this.TrySeeAround(-1,  0, out curlife)) { yield return curlife; }    // 左中
+            //
+            if (this.TrySeeAround( 1,  0, out curlife)) { yield return curlife; }    // 右中
+
+            if (this.TrySeeAround(-1,  1, out curlife)) { yield return curlife; }    // 左下
+            if (this.TrySeeAround( 0,  1, out curlife)) { yield return curlife; }    // 中下
+            if (this.TrySeeAround( 1,  1, out curlife)) { yield return curlife; }    // 右下
         }
     }
 }
