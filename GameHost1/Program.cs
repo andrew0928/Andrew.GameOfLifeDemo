@@ -38,7 +38,7 @@ namespace GameHost1
                             }
                         }
                         matrix[x, y] = TimePassRule(area);
-                        Console.Write(matrix[x, y]? '★' : '☆');
+                        Console.Write(matrix[x, y] ? '★' : '☆');
                         if (matrix[x, y]) live_count++;
                     }
                     Console.WriteLine();
@@ -71,7 +71,21 @@ namespace GameHost1
         static bool TimePassRule(bool[,] area)
         {
             // TODO: fill your code here
+            // Find center
+            var center = area[area.GetLength(0) / 2, area.GetLength(1) / 2];
 
+            // Calculate lives & deaths around it
+            var lives = 0;
+            for (int ay = 0; ay < area.GetLength(0); ay++)
+            {
+                for (int ax = 0; ax < area.GetLength(1); ax++)
+                {
+                    if (area[ax, ay] == true) lives++;
+                }
+            }
+
+            if (center == true && lives >= 2 && lives <= 3) return true;
+            if (center == false && lives == 3) return true;
 
             return false;
         }
