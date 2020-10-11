@@ -65,31 +65,31 @@ namespace GameHost1
 
         static void Init(bool[,] matrix)
         {
-            //Random rnd = new Random();
-            //int rate = 20;
+            Random rnd = new Random();
+            int rate = 20;
 
-            //for (int y = 0; y < matrix.GetLength(0); y++)
-            //{
-            //    for (int x = 0; x < matrix.GetLength(1); x++)
-            //    {
-            //        matrix[x, y] = (rnd.Next(100) < rate);
-            //    }
-            //}
-
-
+            for (int y = 0; y < matrix.GetLength(0); y++)
+            {
+                for (int x = 0; x < matrix.GetLength(1); x++)
+                {
+                    matrix[x, y] = (rnd.Next(100) < rate);
+                }
+            }
 
 
-            // 滑翔機 pattern
-            matrix[4, 4] = true;
-            matrix[6, 4] = true;
-            matrix[5, 5] = true;
-            matrix[6, 5] = true;
-            matrix[5, 6] = true;
 
-            // 信號燈 pattern
-            matrix[10, 5] = true;
-            matrix[11, 5] = true;
-            matrix[12, 5] = true;
+
+            //// 滑翔機 pattern
+            //matrix[4, 4] = true;
+            //matrix[6, 4] = true;
+            //matrix[5, 5] = true;
+            //matrix[6, 5] = true;
+            //matrix[5, 6] = true;
+
+            //// 信號燈 pattern
+            //matrix[10, 5] = true;
+            //matrix[11, 5] = true;
+            //matrix[12, 5] = true;
             
         }
 
