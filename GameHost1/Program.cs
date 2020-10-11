@@ -7,7 +7,7 @@ namespace GameHost1
     {
         static void Main(string[] args)
         {
-            bool[,] matrix = new bool[50, 50];
+            bool[,] matrix = new bool[10, 10];
             bool[,] area = new bool[3, 3];
 
             Init(matrix);
@@ -15,12 +15,12 @@ namespace GameHost1
             for (int count = 0; count < 5000; count++)
             {
                 int live_count = 0;
-                Thread.Sleep(200);
+                Thread.Sleep(2000);
 
                 Console.SetCursorPosition(0, 0);
-                for (int y = 0; y < matrix.GetLength(0); y++)
+                for (int y = 0; y < matrix.GetLength(1); y++)
                 {
-                    for (int x = 0; x < matrix.GetLength(1); x++)
+                    for (int x = 0; x < matrix.GetLength(0); x++)
                     {
                         // clone area
                         for (int ay = 0; ay < 3; ay++)
@@ -53,9 +53,9 @@ namespace GameHost1
             Random rnd = new Random();
             int rate = 20;
 
-            for (int y = 0; y < matrix.GetLength(0); y++)
+            for (int y = 0; y < matrix.GetLength(1); y++)
             {
-                for (int x = 0; x < matrix.GetLength(1); x++)
+                for (int x = 0; x < matrix.GetLength(0); x++)
                 {
                     matrix[x, y] = (rnd.Next(100) < rate);
                 }
@@ -72,14 +72,19 @@ namespace GameHost1
         {
             // TODO: fill your code here
             // Find center
-            var center = area[area.GetLength(0) / 2, area.GetLength(1) / 2];
+            var center_x = area.GetLength(0) / 2;
+            var center_y = area.GetLength(1) / 2;
+            var center = area[center_x, center_y];
 
             // Calculate lives & deaths around it
             var lives = 0;
-            for (int ay = 0; ay < area.GetLength(0); ay++)
+            for (int ay = 0; ay < area.GetLength(1); ay++)
             {
-                for (int ax = 0; ax < area.GetLength(1); ax++)
+                for (int ax = 0; ax < area.GetLength(0); ax++)
                 {
+                    Console.Write("["+ax+",");
+                    Console.Write(ay+"]");
+                    if (ax == center_x && ay == center_y) continue;
                     if (area[ax, ay] == true) lives++;
                 }
             }
