@@ -177,20 +177,19 @@ namespace GameHost1
             for (int count = 0; count < 5000; count++)
             {
                 int live_count = 0;
-                int cell_count = 0;
 
                 Thread.Sleep(200);
                 Console.SetCursorPosition(0, 0);
 
-                foreach(var c in matrix)
+                for(int y = 0; y < matrix.GetLength(1); y++)
                 {
-                    cell_count++;
-                    live_count += (c?1:0);
-                    Console.Write(c ? '★' : '☆');
-                    if (cell_count % matrix.GetLength(0) == 0)
+                    for (int x = 0; x < matrix.GetLength(0); x++)
                     {
-                        Console.WriteLine();
+                        var c = matrix[x, y];
+                        live_count += (c ? 1 : 0);
+                        Console.Write(c ? '★' : '☆');
                     }
+                    Console.WriteLine();
                 }
 
                 matrix = GetNextGenMatrix(matrix);
