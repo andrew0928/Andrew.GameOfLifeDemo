@@ -6,6 +6,14 @@ namespace GameHost1
 {
     public class Program
     {
+
+
+
+
+
+
+
+
         static void Main(string[] args)
         {
             #region run test case
@@ -161,11 +169,11 @@ namespace GameHost1
         }
 
 
-        static void RunGameOfLife()
+        private static void RunGameOfLife()
         { 
             bool[,] matrix = new bool[50, 20];
 
-            Init(matrix);
+            Init(matrix, 20);
             for (int count = 0; count < 5000; count++)
             {
                 int live_count = 0;
@@ -191,7 +199,7 @@ namespace GameHost1
         }
 
 
-        static bool[,] GetNextGenMatrix(bool[,] matrix_current)
+        private static bool[,] GetNextGenMatrix(bool[,] matrix_current)
         {
             bool[,] matrix_next = new bool[matrix_current.GetLength(0), matrix_current.GetLength(1)];
             bool[,] area = new bool[3, 3];
@@ -223,11 +231,9 @@ namespace GameHost1
             return matrix_next;
         }
 
-        static void Init(bool[,] matrix)
+        private static void Init(bool[,] matrix, int rate = 20)
         {
             Random rnd = new Random();
-            int rate = 20;
-
             for (int y = 0; y < matrix.GetLength(1); y++)
             {
                 for (int x = 0; x < matrix.GetLength(0); x++)
@@ -272,7 +278,8 @@ namespace GameHost1
 
 
 
-        static void RunUnitTest(string pattern_name, int repeat_count, List<string[]> testcase)
+
+        private static void RunUnitTest(string pattern_name, int repeat_count, List<string[]> testcase)
         {
             Console.Write($"測試案例: {pattern_name} ...");
 
@@ -298,7 +305,7 @@ namespace GameHost1
             Console.WriteLine(" PASSED.");
         }
 
-        static void CompareMatrix(bool[,] source, bool[,] target)
+        private static void CompareMatrix(bool[,] source, bool[,] target)
         {
             if (source == null) throw new ArgumentNullException();
             if (target == null) throw new ArgumentNullException();
@@ -316,7 +323,7 @@ namespace GameHost1
             return;
         }
 
-        static bool[,] _Transform(string[] map)
+        private static bool[,] _Transform(string[] map)
         {
             bool[,] matrix = new bool[map[0].Length, map.Length];
 
