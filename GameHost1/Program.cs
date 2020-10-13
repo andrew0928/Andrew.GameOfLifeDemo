@@ -123,7 +123,7 @@ namespace GameHost1
                 {
                     return true;
                 }
-                else // (live_cell > 3)
+                else
                 {
                     return false;
                 }
