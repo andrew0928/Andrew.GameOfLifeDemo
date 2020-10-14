@@ -6,11 +6,45 @@ namespace GameHost1
 {
     public class Program
     {
-        
+        /// 每個細胞有兩種狀態 - 存活或死亡，每個細胞與以自身為中心的周圍八格細胞產生互動（如圖，黑色為存活，白色為死亡）
+        /// 當前細胞為存活狀態時，當周圍的存活細胞低於2個時（不包含2個），該細胞變成死亡狀態。（模擬生命數量稀少）
+        /// 當前細胞為存活狀態時，當周圍有2個或3個存活細胞時，該細胞保持原樣。
+        /// 當前細胞為存活狀態時，當周圍有超過3個存活細胞時，該細胞變成死亡狀態。（模擬生命數量過多）
+        /// 當前細胞為死亡狀態時，當周圍有3個存活細胞時，該細胞變成存活狀態。（模擬繁殖）
         public static bool TimePassRule(bool[,] area)
         {
-            // TODO: fill your code here
-            return area[1, 1];
+            bool target = area[1, 1];
+            int live_cell = 0;
+
+            for (int y = 0; y < 3; y++)
+            {
+                for (int x = 0; x < 3; x++)
+                {
+                    if (area[x, y])
+                    {
+                        live_cell++;
+                    }
+                }
+            }
+
+            if (target)
+            {
+                live_cell--;
+
+                if (live_cell == 2 || live_cell == 3)
+                {
+                    return true;
+                }
+            }
+            else
+            {
+                if (live_cell == 3)
+                {
+                    return true;
+                }
+            }
+            
+            return false;
         }
 
 
@@ -22,7 +56,7 @@ namespace GameHost1
 
 
         private static void RunGameOfLife()
-        { 
+        {
             bool[,] matrix = new bool[50, 20];
 
             Init(matrix, 20);
@@ -33,7 +67,7 @@ namespace GameHost1
                 Thread.Sleep(200);
                 Console.SetCursorPosition(0, 0);
 
-                for(int y = 0; y < matrix.GetLength(1); y++)
+                for (int y = 0; y < matrix.GetLength(1); y++)
                 {
                     for (int x = 0; x < matrix.GetLength(0); x++)
                     {
