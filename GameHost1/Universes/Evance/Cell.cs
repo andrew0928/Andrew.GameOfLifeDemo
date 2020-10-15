@@ -1,4 +1,4 @@
-﻿namespace GameHost1
+﻿namespace GameHost1.Universes.Evance
 {
     public class Cell : ICell
     {

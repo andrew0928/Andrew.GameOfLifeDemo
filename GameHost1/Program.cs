@@ -38,7 +38,7 @@ namespace GameHost1
                             }
                         }
                         matrix[x, y] = TimePassRule(area);
-                        Console.Write(matrix[x, y]? '★' : '☆');
+                        Console.Write(matrix[x, y] ? '★' : '☆');
                         if (matrix[x, y]) live_count++;
                     }
                     Console.WriteLine();
@@ -71,68 +71,9 @@ namespace GameHost1
         static bool TimePassRule(bool[,] area)
         {
             // TODO: fill your code here
-
-            return LifeV2(area);
+            return false;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="area">must be bool[3, 3]</param>
-        /// <returns></returns>
-        static bool LifeV1(bool[,] area)
-        {
-            var currentCellStatus = area[1, 1];
-            ushort totalLiveCells = 0;
 
-            for (int y = 0; y < area.GetLength(0); y++)
-            {
-                for (int x = 0; x < area.GetLength(1); x++)
-                {
-                    if (area[x, y])
-                    {
-                        totalLiveCells++;
-                    }
-                }
-            }
-
-            if (currentCellStatus)
-            {
-                totalLiveCells--;
-
-                if (totalLiveCells < 2 || totalLiveCells > 3)
-                {
-                    currentCellStatus = false;
-                }
-            }
-            else
-            {
-                if (totalLiveCells == 3)
-                {
-                    currentCellStatus = true;
-                }
-            }
-
-            return currentCellStatus;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="area">must be bool[3, 3]</param>
-        /// <returns></returns>
-        static bool LifeV2(bool[,] area)
-        {
-            // 自身狀態
-            // 感知周遭
-            // 演化結果
-
-            //var cell = new Cell(area);
-            //cell.Evolve();
-
-            //return cell.IsLive;
-
-            return new Cell(area).Evolve();
-        }
     }
 }
