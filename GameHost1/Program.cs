@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
+using GameHost1.Universes.Evance;
 
 namespace GameHost1
 {
@@ -10,7 +11,9 @@ namespace GameHost1
         public static bool TimePassRule(bool[,] area)
         {
             // TODO: fill your code here
-            return area[1, 1];
+            //return area[1, 1];
+
+            return Life.LifeV2(area);
         }
 
 
