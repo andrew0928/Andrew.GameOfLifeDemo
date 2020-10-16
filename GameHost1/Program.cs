@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
+using GameHost1.Roles;
 
 namespace GameHost1
 {
@@ -52,34 +53,10 @@ namespace GameHost1
 
         public static bool[,] GetNextGenMatrix(bool[,] matrix_current)
         {
-            bool[,] matrix_next = new bool[matrix_current.GetLength(0), matrix_current.GetLength(1)];
-            bool[,] area = new bool[3, 3];
+            var world = new World();
+            world.Init(matrix_current);
 
-            for (int y = 0; y < matrix_current.GetLength(1); y++)
-            {
-                for (int x = 0; x < matrix_current.GetLength(0); x++)
-                {
-                    // clone area
-                    for (int ay = 0; ay < 3; ay++)
-                    {
-                        for (int ax = 0; ax < 3; ax++)
-                        {
-                            int cx = x - 1 + ax;
-                            int cy = y - 1 + ay;
-
-                            if (cx < 0) area[ax, ay] = false;
-                            else if (cy < 0) area[ax, ay] = false;
-                            else if (cx >= matrix_current.GetLength(0)) area[ax, ay] = false;
-                            else if (cy >= matrix_current.GetLength(1)) area[ax, ay] = false;
-                            else area[ax, ay] = matrix_current[cx, cy];
-                        }
-                    }
-
-                    matrix_next[x, y] = TimePassRule(area);
-                }
-            }
-
-            return matrix_next;
+            return world.NextGen();
         }
 
         private static void Init(bool[,] matrix, int rate = 20)
@@ -93,8 +70,5 @@ namespace GameHost1
                 }
             }
         }
-
-
-
     }
 }
