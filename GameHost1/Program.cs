@@ -3,7 +3,7 @@ using System.Threading;
 
 namespace GameHost1
 {
-    class Program
+    public class Program
     {
         static void Main(string[] args)
         {
@@ -68,7 +68,7 @@ namespace GameHost1
         /// </summary>
         /// <param name="area">must be bool[3, 3]</param>
         /// <returns></returns>
-        static bool TimePassRule(bool[,] area)
+        public static bool TimePassRule(bool[,] area)
         {
             // TODO: fill your code here
             // Find center
