@@ -15,7 +15,7 @@ namespace GameHost1
             for (int count = 0; count < 5000; count++)
             {
                 int live_count = 0;
-                Thread.Sleep(200);
+                Thread.Sleep(2000);
 
                 Console.SetCursorPosition(0, 0);
                 for (int y = 0; y < matrix.GetLength(1); y++)
@@ -70,6 +70,7 @@ namespace GameHost1
         /// <returns></returns>
         public static bool TimePassRule(bool[,] area)
         {
+            // TODO: fill your code here
             // Find center
             var center_x = area.GetLength(0) / 2;
             var center_y = area.GetLength(1) / 2;
@@ -81,6 +82,8 @@ namespace GameHost1
             {
                 for (int ax = 0; ax < area.GetLength(0); ax++)
                 {
+                    Console.Write("["+ax+",");
+                    Console.Write(ay+"]");
                     if (ax == center_x && ay == center_y) continue;
                     if (area[ax, ay] == true) lives++;
                 }
