@@ -7,13 +7,15 @@ namespace GameHost1
 {
     public class Program
     {
-        
+        private static Universe _universe;
+        private static int _generation = 0;
+
         public static bool TimePassRule(bool[,] area)
         {
             // TODO: fill your code here
             //return area[1, 1];
 
-            return Life.LifeV2(area);
+            return false;
         }
 
 
@@ -25,7 +27,7 @@ namespace GameHost1
 
 
         private static void RunGameOfLife()
-        { 
+        {
             bool[,] matrix = new bool[50, 20];
 
             Init(matrix, 20);
@@ -36,7 +38,7 @@ namespace GameHost1
                 Thread.Sleep(200);
                 Console.SetCursorPosition(0, 0);
 
-                for(int y = 0; y < matrix.GetLength(1); y++)
+                for (int y = 0; y < matrix.GetLength(1); y++)
                 {
                     for (int x = 0; x < matrix.GetLength(0); x++)
                     {
@@ -55,34 +57,26 @@ namespace GameHost1
 
         public static bool[,] GetNextGenMatrix(bool[,] matrix_current)
         {
-            bool[,] matrix_next = new bool[matrix_current.GetLength(0), matrix_current.GetLength(1)];
-            bool[,] area = new bool[3, 3];
+            //if (_generation == 0)
+            //{
+            //    _universe = new Universe(new UniverseSettings()
+            //    {
+            //        DefaultAliveLivesMatrix = matrix_current,
+            //        EnableAutoMode = false
+            //    });
+            //}
 
-            for (int y = 0; y < matrix_current.GetLength(1); y++)
+            _universe = new Universe(new UniverseSettings()
             {
-                for (int x = 0; x < matrix_current.GetLength(0); x++)
-                {
-                    // clone area
-                    for (int ay = 0; ay < 3; ay++)
-                    {
-                        for (int ax = 0; ax < 3; ax++)
-                        {
-                            int cx = x - 1 + ax;
-                            int cy = y - 1 + ay;
+                DefaultAliveLivesMatrix = matrix_current,
+                EnableAutoMode = false
+            });
 
-                            if (cx < 0) area[ax, ay] = false;
-                            else if (cy < 0) area[ax, ay] = false;
-                            else if (cx >= matrix_current.GetLength(0)) area[ax, ay] = false;
-                            else if (cy >= matrix_current.GetLength(1)) area[ax, ay] = false;
-                            else area[ax, ay] = matrix_current[cx, cy];
-                        }
-                    }
+            _universe.MakeTimeElapseOnce();
 
-                    matrix_next[x, y] = TimePassRule(area);
-                }
-            }
+            _generation++;
 
-            return matrix_next;
+            return _universe.ShowLivesAreAlive();
         }
 
         private static void Init(bool[,] matrix, int rate = 20)
