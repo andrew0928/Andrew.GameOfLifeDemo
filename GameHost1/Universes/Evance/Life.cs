@@ -1,25 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Text;
 
 namespace GameHost1.Universes.Evance
 {
-    public class Life : ILife
+    public class Life : ILife, IDisposable
     {
         private readonly Time _time;
         private readonly IPlanet _planet;
         private readonly LifeSettings _lifeSettings;
-        private bool _isAlive;
         private bool _isAliveAtNextGeneration;
-        private IEnumerable<Func<bool>> _survivalConditions;
+        private bool isDisposed;
 
         public int[] Coordinates { get; private set; }
 
         public IEnumerable<int[]> CoordinateOfNearbyLives { get; private set; }
 
-        public bool IsAlive => _isAlive;
-
+        public bool IsAlive { get; private set; }
 
         public Life(Time time, IPlanet planet, LifeSettings lifeSettings)
         {
@@ -34,24 +30,10 @@ namespace GameHost1.Universes.Evance
 
             Coordinates = _lifeSettings.Coordinates;
 
-            _isAlive = _lifeSettings.IsAlive;
+            IsAlive = _lifeSettings.IsAlive;
 
             CoordinateOfNearbyLives = InitializeCoordinateOfNearbyLives();
-
-            _survivalConditions = InitializeSurvivalConditions();
-
-            //// 自身狀態
-            //// 感知周遭
-            //// 演化結果
-
-            ////var cell = new Cell(area);
-            ////cell.Evolve();
-
-            ////return cell.IsLive;
-
-            //return new Cell(area).Evolve();
         }
-
 
         private void CheckSettings()
         {
@@ -64,47 +46,8 @@ namespace GameHost1.Universes.Evance
             {
                 throw new ArgumentOutOfRangeException(nameof(_lifeSettings.EvolutionInterval), "must bigger than 0");
             }
-
-
         }
 
-        //public Life(Time time, IPlanet planet, int[] coordinate, bool isAlive)
-        //{
-        //    _time = time ?? throw new ArgumentNullException(nameof(time));
-        //    _time.Elapsing += (sender, eventArgs) => this.AdaptToEnvironment();
-        //    _time.Elapsed += (sender, eventArgs) => this.Evolve();
-
-        //    _planet = planet ?? throw new ArgumentNullException(nameof(planet));
-
-        //    if (coordinate == null || coordinate.Length != 2)
-        //    {
-        //        throw new ArgumentOutOfRangeException(nameof(coordinate), "must be int[2]");
-        //    }
-
-        //    Coordinates = coordinate;
-
-        //    _isAlive = isAlive;
-
-        //    CoordinateOfNearbyLives = InitializeCoordinateOfNearbyLives();
-
-        //    _survivalConditions = InitializeSurvivalConditions();
-
-        //    //// 自身狀態
-        //    //// 感知周遭
-        //    //// 演化結果
-
-        //    ////var cell = new Cell(area);
-        //    ////cell.Evolve();
-
-        //    ////return cell.IsLive;
-
-        //    //return new Cell(area).Evolve();
-        //}
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns>int[][2]</returns>
         protected virtual IEnumerable<int[]> InitializeCoordinateOfNearbyLives()
         {
             int areaX = 3;
@@ -123,8 +66,6 @@ namespace GameHost1.Universes.Evance
                         yCoordinate >= 0 && yCoordinate < _planet.MaxCoordinates[1])
                     {
                         //yield return new int[] { xCoordinate, yCoordinate };
-
-
                         nearbyCoornates.Add(new int[] { xCoordinate, yCoordinate });
                     }
                 }
@@ -133,14 +74,6 @@ namespace GameHost1.Universes.Evance
             nearbyCoornates.RemoveAll(c => c[0] == this.Coordinates[0] && c[1] == this.Coordinates[1]);
 
             return nearbyCoornates;
-        }
-
-        protected virtual IEnumerable<Func<bool>> InitializeSurvivalConditions()
-        {
-            var conditions = new List<Func<bool>>();
-
-
-            return conditions;
         }
 
         protected virtual bool CanAdaptToEnvironment(int currentGeneration)
@@ -172,18 +105,46 @@ namespace GameHost1.Universes.Evance
 
         public virtual void AdaptToEnvironment(object sender, TimeEventArgs timeEventArgs)
         {
-            //Console.WriteLine($"AdaptToEnvironment - life coordinates: [{this.Coordinates[0]}, {this.Coordinates[1]}]");
-
             _isAliveAtNextGeneration = CanAdaptToEnvironment(timeEventArgs.CurrentGeneration);
         }
 
         public virtual bool Evolve()
         {
-            //Console.WriteLine($"Evolve - life coordinates: [{this.Coordinates[0]}, {this.Coordinates[1]}]");
+            this.IsAlive = this._isAliveAtNextGeneration;
 
-            this._isAlive = this._isAliveAtNextGeneration;
+            return this.IsAlive;
+        }
 
-            return this._isAlive;
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!isDisposed)
+            {
+                if (disposing)
+                {
+                    // TODO: 處置受控狀態 (受控物件)
+
+                    _time.Elapsing -= (sender, eventArgs) => this.AdaptToEnvironment(sender, eventArgs);
+                    _time.Elapsed -= (sender, eventArgs) => this.Evolve();
+                }
+
+                // TODO: 釋出非受控資源 (非受控物件) 並覆寫完成項
+                // TODO: 將大型欄位設為 Null
+                isDisposed = true;
+            }
+        }
+
+        // // TODO: 僅有當 'Dispose(bool disposing)' 具有會釋出非受控資源的程式碼時，才覆寫完成項
+        // ~Life()
+        // {
+        //     // 請勿變更此程式碼。請將清除程式碼放入 'Dispose(bool disposing)' 方法
+        //     Dispose(disposing: false);
+        // }
+
+        public void Dispose()
+        {
+            // 請勿變更此程式碼。請將清除程式碼放入 'Dispose(bool disposing)' 方法
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }

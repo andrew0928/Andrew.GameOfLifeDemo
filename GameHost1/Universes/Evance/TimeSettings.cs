@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace GameHost1.Universes.Evance
+﻿namespace GameHost1.Universes.Evance
 {
     public class TimeSettings
     {
@@ -12,7 +8,5 @@ namespace GameHost1.Universes.Evance
         /// 普朗克時間，取其為時間的基本單位的意義。
         /// </summary>
         public int PlanckTimeInMillisecond { get; set; } = 200;
-
-        //public bool Start { get; set; }
     }
 }

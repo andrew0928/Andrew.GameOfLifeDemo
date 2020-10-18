@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -9,24 +7,20 @@ namespace GameHost1.Universes.Evance
     public class Time : IDisposable
     {
         private TimeSettings _timeSettings;
+
         private int _maxGeneration;
         private int _speedInMillisecond;
         private int _currentGeneration;
-        //private ManualResetEvent _stopSignal = new ManualResetEvent(false);
         private Task _elaspeTask;
         private volatile bool _elapseSignal = false;
         private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         private bool isDisposed;
-
-        //public AutoResetEvent TimeForwardEvent { get; private set; } = new AutoResetEvent(false);
-
 
         public event EventHandler<TimeEventArgs> Ready;
         public event EventHandler<TimeEventArgs> Elapsing;
         public event EventHandler<TimeEventArgs> Elapsed;
 
         public int CurrentGeneration => _currentGeneration;
-
 
         public Time() : this(new TimeSettings())
         {
@@ -39,50 +33,8 @@ namespace GameHost1.Universes.Evance
             this.AutoElapse();
         }
 
-        //public Time() : this(new TimeSettings(), false)
-        //{
-        //}
-
-        //public Time(bool autoStart) : this(new TimeSettings(), autoStart)
-        //{
-        //}
-
-        //public Time(TimeSettings timeSettings, bool autoStart)
-        //{
-        //    _timeSettings = timeSettings;
-
-        //    this.AutoElapse();
-
-        //    if (autoStart)
-        //    {
-        //        this.Start();
-        //    }
-        //}
-
-        ///// <summary>
-        ///// 
-        ///// </summary>
-        ///// <param name="maxGeneration"></param>
-        ///// <param name="speedInMillisecond"></param>
-        //public Time(int maxGeneration, int speedInMillisecond)
-        //{
-        //    _maxGeneration = maxGeneration;
-        //    _speedInMillisecond = speedInMillisecond;
-
-        //    //this.Start();
-        //}
-
         public void Start()
         {
-            //for (int currentGeneration = 0; currentGeneration < _timeSettings.MaxGeneration; currentGeneration++)
-            //{
-            //    _currentGeneration = currentGeneration;
-
-            //    this.ElapseOnce();
-
-            //    Thread.Sleep(_timeSettings.PlanckTimeInMillisecond);
-            //}
-
             CheckSettings();
 
             _elapseSignal = true;
@@ -126,7 +78,6 @@ namespace GameHost1.Universes.Evance
             Elapsed?.Invoke(this, e);
         }
 
-
         private void AutoElapse()
         {
             CheckSettings();
@@ -136,9 +87,6 @@ namespace GameHost1.Universes.Evance
                 for (int currentGeneration = 0; currentGeneration < _timeSettings.MaxGeneration; currentGeneration++)
                 {
                     SpinWait.SpinUntil(() => _elapseSignal);
-
-                    //_currentGeneration = currentGeneration;
-                    //Interlocked.Increment(ref _currentGeneration);
 
                     this.ElapseOnce();
 

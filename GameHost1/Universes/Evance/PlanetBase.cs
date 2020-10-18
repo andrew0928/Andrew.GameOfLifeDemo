@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Linq;
-using Microsoft.VisualBasic.CompilerServices;
 
 namespace GameHost1.Universes.Evance
 {
@@ -11,7 +8,6 @@ namespace GameHost1.Universes.Evance
     /// </summary>
     public abstract class PlanetBase : IPlanet
     {
-        private int _generation = 0;
         private readonly int _x;
         private readonly int _y;
         private readonly ILife[,] _livesMatrix;
@@ -61,45 +57,6 @@ namespace GameHost1.Universes.Evance
             return false;
         }
 
-
-
-        protected virtual void GoNextGeneration()
-        {
-            _generation++;
-
-            for (int y = 0; y < _livesMatrix.GetLength(1); y++)
-            {
-                for (int x = 0; x < _livesMatrix.GetLength(0); x++)
-                {
-                    //// clone area
-                    //for (int ay = 0; ay < 3; ay++)
-                    //{
-                    //    for (int ax = 0; ax < 3; ax++)
-                    //    {
-                    //        int cx = x - 1 + ax;
-                    //        int cy = y - 1 + ay;
-
-                    //        if (cx < 0) area[ax, ay] = false;
-                    //        else if (cy < 0) area[ax, ay] = false;
-                    //        else if (cx >= matrix_current.GetLength(0)) area[ax, ay] = false;
-                    //        else if (cy >= matrix_current.GetLength(1)) area[ax, ay] = false;
-                    //        else area[ax, ay] = matrix_current[cx, cy];
-                    //    }
-                    //}
-
-                    //matrix_next[x, y] = TimePassRule(area);
-
-                    _livesMatrix[x, y]?.Evolve();
-                }
-            }
-        }
-
-        public void TimeElapsed(object sender, EventArgs e)
-        {
-            //Console.WriteLine("planet get TimeElapsed event");
-            GoNextGeneration();
-        }
-
         public virtual bool[,] ShowLivesAreAlive()
         {
             var areLivesAlive = new bool[_x, _y];
@@ -133,6 +90,5 @@ namespace GameHost1.Universes.Evance
 
             return aliveLivesCount;
         }
-
     }
 }

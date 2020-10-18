@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace GameHost1.Universes.Evance
 {
     /// <summary>
-    /// 一個單一二維行星的宇宙
+    /// 宇宙，有時間(Time)、空間(IPlanet)、物質(IEnumerable<ILife>)
     /// </summary>
     public class Universe
     {
@@ -13,54 +12,20 @@ namespace GameHost1.Universes.Evance
 
         private bool _alreadyBigBang = false;
         private Time _time;
-        //private Space _space;
         private IPlanet _planet;
         private IEnumerable<ILife> _lives;
-
 
         public Universe(UniverseSettings universeSettings)
         {
             _universeSettings = universeSettings;
+
             BigBang();
         }
 
-        //public Universe(TPlanet planet)
-        //{
-        //    BigBang(planet);
-        //}
-
-        ///// <summary>
-        ///// 初始化一個宇宙，有時間但不流逝
-        ///// </summary>
-        //public Universe()
-        //{
-
-        //}
-
-        ///// <summary>
-        ///// 初始化一個宇宙，有時間、空間、生命(物質)
-        ///// </summary>
-        ///// <param name="time"></param>
-        ///// <param name="planet"></param>
-        ///// <param name="lives"></param>
-        //public Universe(Time time, TPlanet planet, ILife[,] lives)
-        //{
-
-        //}
-
         public void MakeTimeElapseOnce()
         {
-            this._time?.ElapseOnce();
+            this._time.ElapseOnce();
         }
-
-
-        //public Universe(bool[,] matrix, UniverseSettings universeSettings)
-        //{
-        //    _universeSettings = universeSettings ?? new UniverseSettings();
-
-
-        //    BigBang(planet);
-        //}
 
         private void BigBang()
         {
@@ -84,7 +49,7 @@ namespace GameHost1.Universes.Evance
             }
         }
 
-        protected IEnumerable<Life> GenerateLives()
+        private IEnumerable<Life> GenerateLives()
         {
             var lives = new List<Life>();
 
@@ -110,34 +75,6 @@ namespace GameHost1.Universes.Evance
 
             return lives;
         }
-
-        public void GoToNextTime()
-        {
-            _time.ElapseOnce();
-        }
-
-
-
-        ///// <summary>
-        ///// 宇宙大爆炸。
-        ///// 不同於現實中推論的宇宙大爆炸，這個宇宙以一顆二維星球(二維的球!?)取代空間的概念，並且立刻演化出生命。
-        ///// </summary>
-        //private void BigBang(TPlanet planet)
-        //{
-        //    if (_alreadyBigBang)
-        //    {
-        //        return;
-        //    }
-
-        //    _alreadyBigBang = true;
-
-        //    _planet = planet;
-
-        //    _time = new Time(_universeSettings.TimeSettings, _universeSettings.AutoStartTime);
-        //    _time.Elapsing += (sender, eventArgs) => _planet.TimeElapsed(sender, eventArgs);
-        //    _time.Elapsing += (sender, eventArgs) => this.ShowViewOfPlanet(sender, eventArgs);
-        //    _time.Start();
-        //}
 
         public bool[,] ShowLivesAreAlive()
         {
@@ -175,8 +112,5 @@ namespace GameHost1.Universes.Evance
         {
             ShowViewOfPlanet(e?.CurrentGeneration ?? 0);
         }
-
     }
-
-
 }

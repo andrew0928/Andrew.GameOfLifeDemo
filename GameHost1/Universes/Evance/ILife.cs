@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace GameHost1.Universes.Evance
+﻿namespace GameHost1.Universes.Evance
 {
     public interface ILife
     {
