@@ -57,21 +57,6 @@ namespace GameHost1.Universes.Evance
             return false;
         }
 
-        public virtual bool[,] ShowLivesAreAlive()
-        {
-            var areLivesAlive = new bool[_x, _y];
-
-            for (int x = 0; x < _x; x++)
-            {
-                for (int y = 0; y < _y; y++)
-                {
-                    areLivesAlive[x, y] = _livesMatrix[x, y]?.IsAlive ?? false;
-                }
-            }
-
-            return areLivesAlive;
-        }
-
         /// <summary>
         /// 
         /// </summary>

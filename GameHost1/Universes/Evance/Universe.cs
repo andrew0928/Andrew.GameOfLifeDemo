@@ -11,8 +11,9 @@ namespace GameHost1.Universes.Evance
         private readonly UniverseSettings _universeSettings;
 
         private bool _alreadyBigBang = false;
-        private Time _time;
+        private ITime _time;
         private IPlanet _planet;
+        private ILifeFactory _lifeFactory;
         private IEnumerable<ILife> _lives;
 
         public Universe(UniverseSettings universeSettings)
@@ -40,6 +41,8 @@ namespace GameHost1.Universes.Evance
 
             _planet = new Planet(_universeSettings.MaxCoordinatesX, _universeSettings.MaxCoordinatesY);
 
+            _lifeFactory = _universeSettings?.LifeFactory ?? new LifeFactory();
+
             _lives = GenerateLives();
 
             if (_universeSettings.EnableAutoMode)
@@ -49,22 +52,23 @@ namespace GameHost1.Universes.Evance
             }
         }
 
-        private IEnumerable<Life> GenerateLives()
+        private IEnumerable<ILife> GenerateLives()
         {
-            var lives = new List<Life>();
+            var lives = new List<ILife>();
 
             for (int x = 0; x < _universeSettings.MaxCoordinatesX; x++)
             {
                 for (int y = 0; y < _universeSettings.MaxCoordinatesY; y++)
                 {
-                    var life = new Life(
-                        _time,
-                        _planet,
-                        new LifeSettings()
-                        {
-                            Coordinates = new int[] { x, y },
-                            IsAlive = _universeSettings.DefaultAliveLivesMatrix[x, y]
-                        });
+                    var lifeSettings = new LifeSettings()
+                    {
+                        Time = _time,
+                        Planet = _planet,
+                        Coordinates = new int[] { x, y },
+                        IsAlive = _universeSettings.DefaultAliveLivesMatrix[x, y]
+                    };
+
+                    var life = _lifeFactory.Generate(lifeSettings);
 
                     _planet.TryPutLife(life);
 

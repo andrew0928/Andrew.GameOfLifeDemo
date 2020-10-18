@@ -4,12 +4,10 @@ using System.Threading.Tasks;
 
 namespace GameHost1.Universes.Evance
 {
-    public class Time : IDisposable
+    public class Time : ITime, IDisposable
     {
         private TimeSettings _timeSettings;
 
-        private int _maxGeneration;
-        private int _speedInMillisecond;
         private int _currentGeneration;
         private Task _elaspeTask;
         private volatile bool _elapseSignal = false;

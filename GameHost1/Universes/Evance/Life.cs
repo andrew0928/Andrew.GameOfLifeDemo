@@ -5,8 +5,8 @@ namespace GameHost1.Universes.Evance
 {
     public class Life : ILife, IDisposable
     {
-        private readonly Time _time;
-        private readonly IPlanet _planet;
+        private readonly ITimeReadOnly _time;
+        private readonly IPlanetReadOnly _planet;
         private readonly LifeSettings _lifeSettings;
         private bool _isAliveAtNextGeneration;
         private bool isDisposed;
@@ -17,13 +17,13 @@ namespace GameHost1.Universes.Evance
 
         public bool IsAlive { get; private set; }
 
-        public Life(Time time, IPlanet planet, LifeSettings lifeSettings)
+        public Life(LifeSettings lifeSettings)
         {
-            _time = time ?? throw new ArgumentNullException(nameof(time));
+            _time = lifeSettings?.Time ?? throw new ArgumentNullException(nameof(LifeSettings.Time));
             _time.Elapsing += (sender, eventArgs) => this.AdaptToEnvironment(sender, eventArgs);
             _time.Elapsed += (sender, eventArgs) => this.Evolve();
 
-            _planet = planet ?? throw new ArgumentNullException(nameof(planet));
+            _planet = lifeSettings?.Planet ?? throw new ArgumentNullException(nameof(LifeSettings.Planet));
 
             _lifeSettings = lifeSettings ?? throw new ArgumentNullException(nameof(lifeSettings));
             CheckSettings();

@@ -10,6 +10,8 @@
 
         public TimeSettings TimeSettings { get; set; } = new TimeSettings();
 
+        public ILifeFactory LifeFactory { get; set; } = new LifeFactory();
+
         public bool EnableAutoMode { get; set; }
     }
 }

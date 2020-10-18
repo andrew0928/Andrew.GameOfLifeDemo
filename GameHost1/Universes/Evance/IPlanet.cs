@@ -1,13 +1,7 @@
-﻿using System.Collections.Generic;
-
-namespace GameHost1.Universes.Evance
+﻿namespace GameHost1.Universes.Evance
 {
-    public interface IPlanet
+    public interface IPlanet : IPlanetReadOnly
     {
-        public int[] MaxCoordinates { get; }
-
         public bool TryPutLife(ILife life);
-
-        public int GetAliveLivesCount(IEnumerable<int[]> coordinates);
     }
 }
