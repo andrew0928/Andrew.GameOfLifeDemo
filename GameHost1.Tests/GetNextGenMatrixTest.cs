@@ -6,7 +6,7 @@ namespace GameHost1.Tests
 {
     public class GetNextGenMatrixPatternsTest
     {
-        [Fact(DisplayName="穩定狀態1: 板凳(1)")]
+        [Fact(DisplayName = "穩定狀態1: 板凳(1)")]
         public void StaticPattern1Test()
         {
             PatternTest(
@@ -23,7 +23,7 @@ namespace GameHost1.Tests
             ).Should().BeTrue();
         }
 
-        [Fact(DisplayName="穩定狀態2: 麵包(1)")]
+        [Fact(DisplayName = "穩定狀態2: 麵包(1)")]
         public void StaticPattern2Test()
         {
             PatternTest(
@@ -48,7 +48,7 @@ namespace GameHost1.Tests
             ).Should().BeTrue();
         }
 
-        [Fact(DisplayName="穩定狀態3: 蜂巢(1)")]
+        [Fact(DisplayName = "穩定狀態3: 蜂巢(1)")]
         public void StaticPattern3Test()
         {
             PatternTest(
@@ -71,7 +71,7 @@ namespace GameHost1.Tests
             ).Should().BeTrue();
         }
 
-        [Fact(DisplayName="震盪狀態1: 信號燈(2)")]
+        [Fact(DisplayName = "震盪狀態1: 信號燈(2)")]
         public void LoopPattern1Test()
         {
             PatternTest(
@@ -89,8 +89,8 @@ namespace GameHost1.Tests
                     "00100",
                     "00000"
                 }
-            ).Should().BeTrue(); 
-            
+            ).Should().BeTrue();
+
             PatternTest(
                 new string[] {
                     "00000",
@@ -109,7 +109,7 @@ namespace GameHost1.Tests
             ).Should().BeTrue();
         }
 
-        [Fact(DisplayName="震盪狀態2: 蟾蜍(2)")]
+        [Fact(DisplayName = "震盪狀態2: 蟾蜍(2)")]
         public void LoopPattern2Test()
         {
             PatternTest(
@@ -149,7 +149,7 @@ namespace GameHost1.Tests
                 }
             ).Should().BeTrue();
         }
-        [Fact(DisplayName="震盪狀態3: 烽火(2)")]
+        [Fact(DisplayName = "震盪狀態3: 烽火(2)")]
         public void LoopPattern3Test()
         {
             PatternTest(
@@ -189,7 +189,7 @@ namespace GameHost1.Tests
                 }
             ).Should().BeTrue();
         }
-        [Fact(DisplayName="會移動的振盪狀態1: 滑翔機 (4)")]
+        [Fact(DisplayName = "會移動的振盪狀態1: 滑翔機 (4)")]
         public void DynamicLoopPattern1Test()
         {
             PatternTest(
@@ -266,15 +266,15 @@ namespace GameHost1.Tests
             ).Should().BeTrue();
         }
 
-        private bool PatternTest(string[] input, string[] expected_result)
+        private bool PatternTest(string[] input, string[] expectedResult)
         {
-            bool[,] input_matrix = _Transform(input);
-            bool[,] expected_matrix = _Transform(expected_result);
-            bool[,] actual_matrix = GameHost1.Program.GetNextGenMatrix(input_matrix);
+            var inputMap = _Transform(input);
+            var expectedMap = _Transform(expectedResult);
+            var actualMap = inputMap.GetNextGen();
 
             try
             {
-                CompareMatrix(expected_matrix, actual_matrix);
+                CompareMaps(expectedMap, actualMap);
             }
             catch
             {
@@ -286,42 +286,42 @@ namespace GameHost1.Tests
 
 
 
-        private void CompareMatrix(bool[,] source, bool[,] target)
+        private void CompareMaps(Map source, Map target)
         {
             if (source == null) throw new ArgumentNullException();
             if (target == null) throw new ArgumentNullException();
-            if (source.GetLength(0) != target.GetLength(0)) throw new ArgumentOutOfRangeException();
-            if (source.GetLength(1) != target.GetLength(1)) throw new ArgumentOutOfRangeException();
+            if (source.RowNum != target.RowNum) throw new ArgumentOutOfRangeException();
+            if (source.ColumnNum != target.ColumnNum) throw new ArgumentOutOfRangeException();
 
-            for (int y = 0; y < source.GetLength(1); y++)
+            for (int y = 0; y < source.ColumnNum; y++)
             {
-                for (int x = 0; x < source.GetLength(0); x++)
+                for (int x = 0; x < source.RowNum; x++)
                 {
-                    if (source[x, y] != target[x, y]) throw new ArgumentException();
+                    if (source.Cells[x, y].IsAlive != target.Cells[x, y].IsAlive) throw new ArgumentException();
                 }
             }
 
             return;
         }
 
-        private bool[,] _Transform(string[] map)
+        private Map _Transform(string[] mapInStr)
         {
-            bool[,] matrix = new bool[map[0].Length, map.Length];
+            var map = new Map(mapInStr[0].Length, mapInStr.Length);
 
             int x = 0;
             int y = 0;
-            foreach (var line in map)
+            foreach (var line in mapInStr)
             {
                 foreach (var c in line)
                 {
-                    matrix[x, y] = (c == '1');
+                    map.Cells[x, y].IsAlive = (c == '1');
                     x++;
                 }
                 x = 0;
                 y++;
             }
 
-            return matrix;
+            return map;
         }
 
     }
