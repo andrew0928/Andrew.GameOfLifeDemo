@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading;
 
 namespace GameHost1
 {
     public class Program
     {
-        
         static void Main(string[] args)
         {
             RunGameOfLife();
@@ -15,9 +13,9 @@ namespace GameHost1
 
         private static void RunGameOfLife()
         { 
-            bool[,] matrix = new bool[50, 20];
+            Map map = new Map();
+            map.Init(50,20, 20);
 
-            Init(matrix, 20);
             for (int count = 0; count < 5000; count++)
             {
                 int live_count = 0;
@@ -25,7 +23,9 @@ namespace GameHost1
                 Thread.Sleep(200);
                 Console.SetCursorPosition(0, 0);
 
-                for(int y = 0; y < matrix.GetLength(1); y++)
+                var matrix = map.Matrix;
+
+                for (int y = 0; y < matrix.GetLength(1); y++)
                 {
                     for (int x = 0; x < matrix.GetLength(0); x++)
                     {
@@ -36,7 +36,7 @@ namespace GameHost1
                     Console.WriteLine();
                 }
 
-                matrix = GetNextGenMatrix(matrix);
+                map.Matrix = GetNextGenMatrix(matrix);
                 Console.WriteLine($"total lives: {live_count}, round: {count} / 5000...");
             }
         }
@@ -74,49 +74,11 @@ namespace GameHost1
             return matrix_next;
         }
 
-        private static void Init(bool[,] matrix, int rate = 20)
-        {
-            Random rnd = new Random();
-            for (int y = 0; y < matrix.GetLength(1); y++)
-            {
-                for (int x = 0; x < matrix.GetLength(0); x++)
-                {
-                    matrix[x, y] = (rnd.Next(100) < rate);
-                }
-            }
-        }
 
-        /// <summary>
-        /// 1. 每個細胞有兩種狀態 - 存活或死亡，每個細胞與以自身為中心的周圍八格細胞產生互動（如圖，黑色為存活，白色為死亡）
-        /// 2. 當前細胞為存活狀態時，當周圍的存活細胞低於2個時（不包含2個），該細胞變成死亡狀態。（模擬生命數量稀少）
-        /// 3. 當前細胞為存活狀態時，當周圍有2個或3個存活細胞時，該細胞保持原樣。
-        /// 4. 當前細胞為存活狀態時，當周圍有超過3個存活細胞時，該細胞變成死亡狀態。（模擬生命數量過多）
-        /// 5. 當前細胞為死亡狀態時，當周圍有3個存活細胞時，該細胞變成存活狀態。（模擬繁殖）
-        /// 6. 可以把最初的細胞結構定義為種子，當所有在種子中的細胞同時被以上規則處理後，可以得到第一代細胞圖。按規則繼續處理當前的細胞圖，可以得到下一代的細胞圖，周而復始。 
-        /// </summary>
-        /// <param name="area">must be bool[3, 3]</param>
-        /// <returns></returns>
         public static bool TimePassRule(bool[,] area)
         {
-            var center = area[1, 1];
-            int alive = 0;
-
-            for (int i = 0; i < area.GetLength(0); i++)
-                for (int k = 0; k < area.GetLength(1); k++)
-                    if (area[i, k]) alive++;
-
-            if (center)
-            {
-                alive--;
-                if (alive < 2 || alive > 3)
-                    center = false;
-            }
-            else
-            {
-                if (alive == 3)
-                    center = true;
-            }
-            return center;
+            var cell = new Cell();
+            return cell.IsAlive(area);
         }
     }
 }
