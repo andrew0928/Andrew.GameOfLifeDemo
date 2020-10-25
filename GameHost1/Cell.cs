@@ -10,12 +10,13 @@ namespace GameHost1
 
         public Cell[,] Partners { get; set; }
 
-        public void Init(int Rate) 
+        public Cell() { }
+
+        public Cell(int rate) 
         {
             Random rnd = new Random();
-            Status = (rnd.Next(100) < Rate);
+            Status = (rnd.Next(100) < rate);
         }
-        
 
         /// <summary>
         /// 1. 每個細胞有兩種狀態 - 存活或死亡，每個細胞與以自身為中心的周圍八格細胞產生互動（如圖，黑色為存活，白色為死亡）
@@ -27,8 +28,9 @@ namespace GameHost1
         /// </summary>
         /// <param name="cells">must be bool[3, 3]</param>
         /// <returns></returns>
-        public bool IsAlive() 
+        public bool IsAlive()
         {
+            var isAlive = this.Status;
             int aliveCount = 0;
 
             for (int i = 0; i < Partners.GetLength(0); i++)
@@ -39,14 +41,14 @@ namespace GameHost1
             {
                 aliveCount--;
                 if (aliveCount < 2 || aliveCount > 3)
-                    this.Status = false;
+                    isAlive = false;
             }
             else
             {
                 if (aliveCount == 3)
-                    this.Status = true;
+                    isAlive = true;
             }
-            return this.Status;
+            return isAlive;
         }
     }
 }
