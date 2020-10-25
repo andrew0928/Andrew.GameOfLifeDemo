@@ -8,6 +8,14 @@ namespace GameHost1
     {
         public bool Status { get; set; }
 
+        public Cell[,] Partners { get; set; }
+
+        public void Init(int Rate) 
+        {
+            Random rnd = new Random();
+            Status = (rnd.Next(100) < Rate);
+        }
+        
 
         /// <summary>
         /// 1. 每個細胞有兩種狀態 - 存活或死亡，每個細胞與以自身為中心的周圍八格細胞產生互動（如圖，黑色為存活，白色為死亡）
@@ -17,29 +25,28 @@ namespace GameHost1
         /// 5. 當前細胞為死亡狀態時，當周圍有3個存活細胞時，該細胞變成存活狀態。（模擬繁殖）
         /// 6. 可以把最初的細胞結構定義為種子，當所有在種子中的細胞同時被以上規則處理後，可以得到第一代細胞圖。按規則繼續處理當前的細胞圖，可以得到下一代的細胞圖，周而復始。 
         /// </summary>
-        /// <param name="area">must be bool[3, 3]</param>
+        /// <param name="cells">must be bool[3, 3]</param>
         /// <returns></returns>
-        public bool IsAlive(bool[,] area) 
+        public bool IsAlive() 
         {
-            var center = area[1, 1];
-            int alive = 0;
+            int aliveCount = 0;
 
-            for (int i = 0; i < area.GetLength(0); i++)
-                for (int k = 0; k < area.GetLength(1); k++)
-                    if (area[i, k]) alive++;
+            for (int i = 0; i < Partners.GetLength(0); i++)
+                for (int k = 0; k < Partners.GetLength(1); k++)
+                    if (Partners[i, k].Status) aliveCount++;
 
-            if (center)
+            if (this.Status)
             {
-                alive--;
-                if (alive < 2 || alive > 3)
-                    center = false;
+                aliveCount--;
+                if (aliveCount < 2 || aliveCount > 3)
+                    this.Status = false;
             }
             else
             {
-                if (alive == 3)
-                    center = true;
+                if (aliveCount == 3)
+                    this.Status = true;
             }
-            return center;
+            return this.Status;
         }
     }
 }

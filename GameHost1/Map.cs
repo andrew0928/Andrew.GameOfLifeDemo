@@ -6,19 +6,53 @@ namespace GameHost1
 {
     public class Map
     {
-        public bool[,] Matrix { get; set; }
+        public int Width { get; set; }
+        public int Height { get; set; }
+        public int Rate { get; set; }
 
-        public void Init(int w, int h, int rate = 20)
+
+        public Cell[,] Matrix { get; set; }
+
+        public void Init()
         {
-            Matrix = new bool[w, h];
-            Random rnd = new Random();
-            for (int y = 0; y < Matrix.GetLength(1); y++)
+            Matrix = new Cell[Width, Height];
+            for (int y = 0; y < Height; y++)
             {
-                for (int x = 0; x < Matrix.GetLength(0); x++)
+                for (int x = 0; x < Width; x++)
                 {
-                    Matrix[x, y] = (rnd.Next(100) < rate);
+                    Matrix[x, y] = new Cell();
+                    Matrix[x, y].Init(Rate);
                 }
             }
+        }
+
+        public bool[,] ConvertToBoolMatrix() 
+        {
+            var result = new bool[Width, Height];
+            for (int y = 0; y < Height; y++)
+            {
+                for (int x = 0; x < Width; x++)
+                {
+                    result[x, y] = Matrix[x, y].Status;
+                }
+            }
+            return result;
+        }
+
+        public Cell[,] ConvertToCellMatrix(bool[,] matrix)
+        {
+            var result = new Cell[matrix.GetLength(0), matrix.GetLength(1)];
+            for (int y = 0; y < matrix.GetLength(1); y++)
+            {
+                for (int x = 0; x < matrix.GetLength(0); x++)
+                {
+                    result[x, y] = new Cell
+                    {
+                        Status = matrix[x, y]
+                    };
+                }
+            }
+            return result;
         }
     }
 }
