@@ -109,12 +109,12 @@ namespace GameHost1
             {
                 alive--;
                 if (alive < 2 || alive > 3)
-                    center = !center;
+                    center = false;
             }
             else
             {
                 if (alive == 3)
-                    center = !center;
+                    center = true;
             }
             return center;
         }
