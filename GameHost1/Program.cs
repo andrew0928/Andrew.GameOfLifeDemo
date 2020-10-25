@@ -12,8 +12,8 @@ namespace GameHost1
 
         private static void RunGameOfLife()
         {
-            Map map = new Map(50, 20);
-            map.Init();
+            Map map = new Map();
+            map.Init(50, 20);
 
             for (int count = 0; count < 5000; count++)
             {

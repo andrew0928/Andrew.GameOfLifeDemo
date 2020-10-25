@@ -1,4 +1,6 @@
-﻿namespace GameHost1
+﻿using System.Threading;
+
+namespace GameHost1
 {
     public class Map
     {
@@ -10,15 +12,12 @@
 
         public Map() { }
 
-        public Map(int w, int h) 
+        public void Init(int w, int h)
         {
             this.Width = w;
             this.Height = h;
             this.Matrix = new Cell[Width, Height];
-        }
 
-        public void Init()
-        {
             for (int y = 0; y < Height; y++)
             {
                 for (int x = 0; x < Width; x++)

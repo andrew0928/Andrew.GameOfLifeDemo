@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace GameHost1
 {
@@ -10,9 +8,14 @@ namespace GameHost1
 
         public Cell[,] Partners { get; set; }
 
-        public Cell() { }
+        public Alarm Alarm { get; set; }
 
-        public Cell(int rate) 
+        public Cell() 
+        {
+
+        }
+
+        public Cell(int rate)
         {
             Random rnd = new Random();
             Status = (rnd.Next(100) < rate);
@@ -49,6 +52,12 @@ namespace GameHost1
                     isAlive = true;
             }
             return isAlive;
+        }
+
+        public void Evolve() 
+        {
+            if (Partners != null)
+                this.Status = IsAlive();
         }
     }
 }
