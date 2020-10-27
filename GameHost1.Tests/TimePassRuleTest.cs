@@ -2,7 +2,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace GameHost1.Tests
 {
-    [TestClass]
+    //[TestClass]
     public class TimePassRuleTest
     {
         /*
