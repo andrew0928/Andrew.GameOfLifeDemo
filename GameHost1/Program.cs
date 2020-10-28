@@ -7,11 +7,11 @@ namespace GameHost1
     public class Program
     {
         
-        public static bool TimePassRule(bool[,] area)
-        {
-            // TODO: fill your code here
-            return area[1, 1];
-        }
+        //public static bool TimePassRule(bool[,] area)
+        //{
+        //    // TODO: fill your code here
+        //    return area[1, 1];
+        //}
 
 
 
