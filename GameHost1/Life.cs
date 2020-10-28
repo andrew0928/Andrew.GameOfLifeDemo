@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 
 namespace GameHost1
 {
@@ -11,19 +12,33 @@ namespace GameHost1
 
 
 
+        private static int _seed = 0;
+
+        public int ID { get; private set; }
+
+        public int Frame { get; private set; }
+
         public bool IsAlive { get; private set; }
 
         private readonly World.LifeSensibility _sensibility;
-        public Life(World.LifeSensibility sensibility, bool alive)
+        public Life(World.LifeSensibility sensibility, bool alive, int frame)
         {
+            this.ID = Interlocked.Increment(ref _seed);
+
             if (sensibility == null) throw new ArgumentNullException();
             this._sensibility = sensibility;
             this.IsAlive = alive;
+            this.Frame = frame;
         }
 
-        public bool TimePass()
+        /// <summary>
+        /// 觸發狀態轉換，同時傳回下次轉換時間 (單位: frames)
+        /// </summary>
+        /// <returns></returns>
+        public int TimePass()
         {
-            return this.IsAlive = this.CanSurvival();
+            this.IsAlive = this.CanSurvival();
+            return this.Frame;
         }
 
         private bool CanSurvival()
@@ -50,7 +65,7 @@ namespace GameHost1
         {
             get
             {
-                return new Life(this._sensibility, this.IsAlive);
+                return this.MemberwiseClone() as Life; //new Life(this._sensibility, this.IsAlive, this.Frame);
             }
         }
     }
