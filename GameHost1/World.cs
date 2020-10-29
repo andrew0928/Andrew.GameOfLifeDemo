@@ -17,13 +17,6 @@ namespace GameHost1
             this._maps_current_life_sense = new Life.Sensibility[this.Dimation.width, this.Dimation.depth];
             this._maps_snapshot = new Life[this.Dimation.width, this.Dimation.depth];
 
-            //for (int y = 0; y < this.Dimation.depth; y++)
-            //{
-            //    for (int x = 0; x < this.Dimation.width; x++)
-            //    {
-            //        this.Born(init_matrix[x, y], (x, y));
-            //    }
-            //}
             foreach(var (x, y) in World.ForEachPos<bool>(init_matrix))
             {
                 this.Born(init_matrix[x, y], (x, y));
@@ -52,22 +45,14 @@ namespace GameHost1
         private void TimePass()
         {
             foreach(var (x, y) in World.ForEachPos<Life.Sensibility>(this._maps_current_life_sense))
-            //for (int y = 0; y < this.Dimation.depth; y++)
             {
-                //for (int x = 0; x < this.Dimation.width; x++)
-                {
-                    this._maps_snapshot[x, y] =
-                        this._maps_current_life_sense[x, y].TakeSnapshot();
-                }
+                this._maps_snapshot[x, y] =
+                    this._maps_current_life_sense[x, y].TakeSnapshot();
             }
-
+        
             foreach (var (x, y) in World.ForEachPos<Life.Sensibility>(this._maps_current_life_sense))
-            //for (int y = 0; y < this.Dimation.depth; y++)
             {
-                //for (int x = 0; x < this.Dimation.width; x++)
-                {
-                    this._maps_current_life_sense[x, y].TimePass();
-                }
+                this._maps_current_life_sense[x, y].TimePass();
             }
         }
 
@@ -77,13 +62,8 @@ namespace GameHost1
             bool[,] matrix = new bool[this.Dimation.width, this.Dimation.depth];
 
             foreach (var (x, y) in World.ForEachPos<Life.Sensibility>(this._maps_current_life_sense))
-            //for (int y = 0; y < this.Dimation.depth; y++)
             {
-                //for (int x = 0; x < this.Dimation.width; x++)
-                {
-                    matrix[x, y] = (this._maps_current_life_sense[x, y] != null && this._maps_current_life_sense[x, y].Itself.IsAlive);
-
-                }
+                matrix[x, y] = (this._maps_current_life_sense[x, y] != null && this._maps_current_life_sense[x, y].Itself.IsAlive);
             }
 
             return matrix;
