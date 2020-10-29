@@ -7,13 +7,6 @@ namespace GameHost1
         public int RowNum { get; set; }
         public int ColumnNum { get; set; }
         public ICell[,] Cells { get; set; }
-        public double SecondsToSwitch => 1 / 60;
-        public Map(ICell[,] cells)
-        {
-            Cells = cells;
-            RowNum = cells.GetLength(0);
-            ColumnNum = cells.GetLength(1);
-        }
         public Map(int rows, int columns)
         {
             Cells = new ICell[rows, columns];
@@ -29,6 +22,7 @@ namespace GameHost1
             {
                 for (int x = 0; x < RowNum; x++)
                 {
+                    // TODO: 細胞自己 Cell.LookAround() 比較合理嗎?
                     // 看附近八格的細胞有誰活著
                     var livesAround = 0;
                     for (int ay = y - 1; ay <= y + 1; ay++)

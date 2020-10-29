@@ -11,6 +11,7 @@ namespace GameHost1
         }
         public void PassTime(TimeSpan duration)
         {
+            // TODO: trigger map GetNextGen every 1/60 sec
             Now = Now.Add(duration);
         }
     }
