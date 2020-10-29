@@ -16,7 +16,7 @@ namespace GameHost1
             var world = new World(matrix, frames, 10);
 
             int count = 0;
-            int until = 100000;
+            int until = 10000;
             foreach(var frame in world.Running(until))
             {
                 count++;

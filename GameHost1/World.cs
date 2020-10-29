@@ -58,43 +58,44 @@ namespace GameHost1
 
         public IEnumerable<(int time, bool[,] matrix)> Running(int until_frames = 10000)
         {
-            SortedList<ToDoItem, object> todos = new SortedList<ToDoItem, object>(new ToDoItemComparer());
+            //SortedList<ToDoItem, object> todos = new SortedList<ToDoItem, object>(new ToDoItemComparer());
+            SortedSet<ToDoItem> todoset = new SortedSet<ToDoItem>(new ToDoItemComparer());
 
             foreach(var (x, y) in ForEachPos<Life.Sensibility>(this._maps_current_life_sense))
             {
-                //this._maps_current[x, y].TimePass();
                 var sense = this._maps_current_life_sense[x, y];
-                todos.Add(new ToDoItem()
+                todoset.Add(new ToDoItem()
                 {
                     ID = sense.Itself.ID,
                     IsWorld = false,
                     TimePass = sense.TimePass,
                     NextTimeFrame = sense.TimePass()
-                }, null);
+                });
             }
 
-            todos.Add(new ToDoItem()
+            todoset.Add(new ToDoItem()
             {
                 ID = -1,
                 IsWorld = true,
                 TimePass = this.TimePass,
                 NextTimeFrame = this.TimePass()
-            }, null);
+            });
 
             do
             {
-                var item = todos.First().Key;
+                var item = todoset.First();
 
-                todos.Remove(item);
-                todos.Add(new ToDoItem()
+                todoset.Remove(item);
+                todoset.Add(new ToDoItem()
                 {
                     ID = item.ID,
                     IsWorld = item.IsWorld,
                     TimePass = item.TimePass,
                     NextTimeFrame = item.NextTimeFrame + item.TimePass()
-                }, null);
+                });
+
                 if (item.IsWorld) yield return (item.NextTimeFrame, this.GodVision());
-                if (item.NextTimeFrame > until_frames) break;
+                if (item.NextTimeFrame >= until_frames) break;
             } while (true);
         }
 
