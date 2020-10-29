@@ -16,7 +16,8 @@ namespace GameHost1
             var world = new World(matrix, frames, 10);
 
             int count = 0;
-            foreach(var frame in world.Running())
+            int until = 100000;
+            foreach(var frame in world.Running(until))
             {
                 count++;
                 int live_count = 0;
@@ -37,7 +38,7 @@ namespace GameHost1
                 }
 
                 Thread.Sleep(200);
-                Console.WriteLine($"total lives: {live_count}, time frame: {time} / 5000...");
+                Console.WriteLine($"total lives: {live_count}, time frame: {time} / {until}...");
             }
 
 
@@ -78,7 +79,8 @@ namespace GameHost1
         {
             int[,] frames = new int[matrix.GetLength(0), matrix.GetLength(1)];
 
-            for (int y = 0; y < matrix.GetLength(1); y++) for (int x = 0; x < matrix.GetLength(0); x++) frames[x, y] = 10;
+            //for (int y = 0; y < matrix.GetLength(1); y++) for (int x = 0; x < matrix.GetLength(0); x++) frames[x, y] = 10;
+            foreach (var (x, y) in World.ForEachPos<bool>(matrix)) frames[x, y] = 10;
 
             var world = new World(matrix, frames, 10);
 
@@ -88,9 +90,10 @@ namespace GameHost1
         private static void Init(bool[,] matrix, int[,] frames, int cell_frame = 10, int rate = 20)
         {
             Random rnd = new Random();
-            for (int y = 0; y < matrix.GetLength(1); y++)
+            //for (int y = 0; y < matrix.GetLength(1); y++)
             {
-                for (int x = 0; x < matrix.GetLength(0); x++)
+                //for (int x = 0; x < matrix.GetLength(0); x++)
+                foreach(var (x, y) in World.ForEachPos<bool>(matrix))
                 {
                     matrix[x, y] = (rnd.Next(100) < rate);
                     frames[x, y] = cell_frame;

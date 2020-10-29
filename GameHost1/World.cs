@@ -13,7 +13,10 @@ namespace GameHost1
         //private WorldContext[,] _matrix;
 
         // 目前 life 存在的地圖
-        private Life[,] _maps_current;
+        //[Obsolete]
+        //private Life[,] _maps_current;
+        private Life.Sensibility[,] _maps_current_life_sense;
+
         private int _frame;
 
         // 上一個 frame 的地圖快照。所有 life / god 的視覺都會觀察到這個 frame 的景物
@@ -32,35 +35,52 @@ namespace GameHost1
         public World(bool[,] init_matrix, int[,] init_cell_frame, int world_frame)
         {
             this.Dimation = (init_matrix.GetLength(0), init_matrix.GetLength(1));
-            this._maps_current = new Life[this.Dimation.width, this.Dimation.depth];
+            //this._maps_current = new Life[this.Dimation.width, this.Dimation.depth];
+            this._maps_current_life_sense = new Life.Sensibility[this.Dimation.width, this.Dimation.depth];
             this._maps_snapshot = new Life[this.Dimation.width, this.Dimation.depth];
             this._frame = world_frame;
 
-            for (int y = 0; y < this.Dimation.depth; y++)
+            //for (int y = 0; y < this.Dimation.depth; y++)
+            //{
+            //    for (int x = 0; x < this.Dimation.width; x++)
+            //    {
+            //        this.Born(init_matrix[x, y], init_cell_frame[x, y], (x, y));
+            //    }
+            //}
+
+            foreach(var (x, y) in ForEachPos<bool>(init_matrix))
             {
-                for (int x = 0; x < this.Dimation.width; x++)
-                {
-                    (int x, int y) cell_pos = (x, y);
-                    this.Born(
-                        new Life(new LifeSensibility(this, cell_pos), init_matrix[cell_pos.x, cell_pos.y], init_cell_frame[cell_pos.x, cell_pos.y]),
-                        cell_pos);
-                }
+                this.Born(init_matrix[x, y], init_cell_frame[x, y], (x, y));
             }
+            
 
             this.RefreshFrame();
         }
 
 
+
         // only God (world) can do this
-        private void Born(Life cell, (int x, int y) position)
+        private void Born(bool alive, int cell_frame, (int x, int y) position)
         {
-            if (this._maps_current[position.x, position.y] != null)
+            //if (this._maps_current[position.x, position.y] != null)
+            //{
+            //    throw new ArgumentOutOfRangeException();
+            //}
+
+            //this._maps_current[position.x, position.y] = cell;
+            //this._links.Add(cell, position);
+            if (this._maps_current_life_sense[position.x, position.y] != null)
             {
                 throw new ArgumentOutOfRangeException();
             }
 
-            this._maps_current[position.x, position.y] = cell;
-            this._links.Add(cell, position);
+            var cell = new Life(out var sense, alive, cell_frame);
+            sense.InitWorldSide(this, position, () =>
+            {
+                return this.SeeAround(position);
+            });
+            this._maps_current_life_sense[position.x, position.y] = sense;
+
         }
 
         // only God (world) can do this
@@ -70,21 +90,22 @@ namespace GameHost1
             return this._frame;
         }
 
-        public IEnumerable<(int time, bool[,] matrix)> Running()
+        public IEnumerable<(int time, bool[,] matrix)> Running(int until_frames = 10000)
         {
             SortedList<ToDoItem, object> todos = new SortedList<ToDoItem, object>(new ToDoItemComparer());
-            for (int y = 0; y < this.Dimation.depth; y++)
+            //for (int y = 0; y < this.Dimation.depth; y++)
             {
-                for (int x = 0; x < this.Dimation.width; x++)
+                //for (int x = 0; x < this.Dimation.width; x++)
+                foreach(var (x, y) in ForEachPos<Life.Sensibility>(this._maps_current_life_sense))
                 {
                     //this._maps_current[x, y].TimePass();
-                    var life = this._maps_current[x, y];
+                    var sense = this._maps_current_life_sense[x, y];
                     todos.Add(new ToDoItem()
                     {
-                        ID = life.ID,
+                        ID = sense.Itself.ID,
                         IsWorld = false,
-                        TimePass = life.TimePass,
-                        NextTimeFrame = life.TimePass()
+                        TimePass = sense.TimePass,
+                        NextTimeFrame = sense.TimePass()
                     }, null);
                 }
             }
@@ -93,6 +114,7 @@ namespace GameHost1
                 ID = -1,
                 IsWorld = true,
                 TimePass = this.TimePass,
+                //LifeSense = null,
                 NextTimeFrame = this.TimePass()
             }, null);
 
@@ -106,9 +128,11 @@ namespace GameHost1
                     ID = item.ID,
                     IsWorld = item.IsWorld,
                     TimePass = item.TimePass,
+                    //LifeSense = item.LifeSense,
                     NextTimeFrame = item.NextTimeFrame + item.TimePass()
                 }, null);
                 if (item.IsWorld) yield return (item.NextTimeFrame, this.GodVision());
+                if (item.NextTimeFrame > until_frames) break;
             } while (true);
         }
 
@@ -135,11 +159,12 @@ namespace GameHost1
 
         private void RefreshFrame()
         {
-            for (int y = 0; y < this.Dimation.depth; y++)
+            //for (int y = 0; y < this.Dimation.depth; y++)
             {
-                for (int x = 0; x < this.Dimation.width; x++)
+                //for (int x = 0; x < this.Dimation.width; x++)
+                foreach (var (x, y) in ForEachPos<Life.Sensibility>(this._maps_current_life_sense))
                 {
-                    this._maps_snapshot[x, y] = this._maps_current[x, y].Snapshot;
+                    this._maps_snapshot[x, y] = this._maps_current_life_sense[x, y].TakeSnapshot();
                 }
             }
         }
@@ -149,9 +174,10 @@ namespace GameHost1
         {
             bool[,] matrix = new bool[this.Dimation.width, this.Dimation.depth];
 
-            for (int y = 0; y < this.Dimation.depth; y++)
+            //for (int y = 0; y < this.Dimation.depth; y++)
             {
-                for (int x = 0; x < this.Dimation.width; x++)
+                //for (int x = 0; x < this.Dimation.width; x++)
+                foreach (var (x, y) in ForEachPos<Life.Sensibility>(this._maps_current_life_sense))
                 {
                     matrix[x, y] = (this._maps_snapshot[x, y] != null && this._maps_snapshot[x, y].IsAlive);
                 }
@@ -190,21 +216,35 @@ namespace GameHost1
         }
 
 
-        public class LifeSensibility
+        //public class LifeSensibility
+        //{
+        //    private World _reality;
+        //    private (int x, int y) _position;
+
+        //    public LifeSensibility(World reality, (int x, int y) pos)
+        //    {
+        //        this._reality = reality;
+        //        this._position = pos;
+        //    }
+
+        //    public Life[,] SeeAround()
+        //    {
+        //        return this._reality.SeeAround(this._position);
+        //    }
+        //}
+
+
+        // utility, 簡化到處都出現的雙層迴圈。只會循序取出 2D 陣列中所有的 (x, y) 座標組合
+        public static IEnumerable<(int x, int y)> ForEachPos<T>(T[,] array)
         {
-            private World _reality;
-            private (int x, int y) _position;
-
-            public LifeSensibility(World reality, (int x, int y) pos)
+            for (int y = 0; y < array.GetLength(1); y++)
             {
-                this._reality = reality;
-                this._position = pos;
-            }
-
-            public Life[,] SeeAround()
-            {
-                return this._reality.SeeAround(this._position);
+                for (int x = 0; x < array.GetLength(0); x++)
+                {
+                    yield return (x, y);
+                }
             }
         }
     }
+
 }
