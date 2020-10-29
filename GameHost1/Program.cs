@@ -24,6 +24,7 @@ namespace GameHost1
                 Thread.Sleep(200);
                 Console.SetCursorPosition(0, 0);
 
+                //foreach (var (x, y) in World.ForEachPos<bool>(matrix))
                 for(int y = 0; y < matrix.GetLength(1); y++)
                 {
                     for (int x = 0; x < matrix.GetLength(0); x++)
@@ -53,9 +54,11 @@ namespace GameHost1
         private static void Init(bool[,] matrix, int rate = 20)
         {
             Random rnd = new Random();
-            for (int y = 0; y < matrix.GetLength(1); y++)
+
+            foreach (var (x, y) in World.ForEachPos<bool>(matrix))
+            //    for (int y = 0; y < matrix.GetLength(1); y++)
             {
-                for (int x = 0; x < matrix.GetLength(0); x++)
+                //for (int x = 0; x < matrix.GetLength(0); x++)
                 {
                     matrix[x, y] = (rnd.Next(100) < rate);
                 }

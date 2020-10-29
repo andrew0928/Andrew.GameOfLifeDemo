@@ -17,12 +17,16 @@ namespace GameHost1
             this._maps_current_life_sense = new Life.Sensibility[this.Dimation.width, this.Dimation.depth];
             this._maps_snapshot = new Life[this.Dimation.width, this.Dimation.depth];
 
-            for (int y = 0; y < this.Dimation.depth; y++)
+            //for (int y = 0; y < this.Dimation.depth; y++)
+            //{
+            //    for (int x = 0; x < this.Dimation.width; x++)
+            //    {
+            //        this.Born(init_matrix[x, y], (x, y));
+            //    }
+            //}
+            foreach(var (x, y) in World.ForEachPos<bool>(init_matrix))
             {
-                for (int x = 0; x < this.Dimation.width; x++)
-                {
-                    this.Born(init_matrix[x, y], (x, y));
-                }
+                this.Born(init_matrix[x, y], (x, y));
             }
 
             _god = new GodPower(this);
@@ -47,18 +51,20 @@ namespace GameHost1
         // only God (world) can do this via {GodPower}
         private void TimePass()
         {
-            for (int y = 0; y < this.Dimation.depth; y++)
+            foreach(var (x, y) in World.ForEachPos<Life.Sensibility>(this._maps_current_life_sense))
+            //for (int y = 0; y < this.Dimation.depth; y++)
             {
-                for (int x = 0; x < this.Dimation.width; x++)
+                //for (int x = 0; x < this.Dimation.width; x++)
                 {
                     this._maps_snapshot[x, y] =
                         this._maps_current_life_sense[x, y].TakeSnapshot();
                 }
             }
 
-            for (int y = 0; y < this.Dimation.depth; y++)
+            foreach (var (x, y) in World.ForEachPos<Life.Sensibility>(this._maps_current_life_sense))
+            //for (int y = 0; y < this.Dimation.depth; y++)
             {
-                for (int x = 0; x < this.Dimation.width; x++)
+                //for (int x = 0; x < this.Dimation.width; x++)
                 {
                     this._maps_current_life_sense[x, y].TimePass();
                 }
@@ -70,12 +76,12 @@ namespace GameHost1
         {
             bool[,] matrix = new bool[this.Dimation.width, this.Dimation.depth];
 
-            for (int y = 0; y < this.Dimation.depth; y++)
+            foreach (var (x, y) in World.ForEachPos<Life.Sensibility>(this._maps_current_life_sense))
+            //for (int y = 0; y < this.Dimation.depth; y++)
             {
-                for (int x = 0; x < this.Dimation.width; x++)
+                //for (int x = 0; x < this.Dimation.width; x++)
                 {
-                    matrix[x, y] =
-                        (this._maps_current_life_sense[x, y] != null && this._maps_current_life_sense[x, y].Itself.IsAlive);
+                    matrix[x, y] = (this._maps_current_life_sense[x, y] != null && this._maps_current_life_sense[x, y].Itself.IsAlive);
 
                 }
             }
@@ -132,5 +138,21 @@ namespace GameHost1
                 this._reality.TimePass();
             }
         }
+
+
+
+
+        // utility, 簡化到處都出現的雙層迴圈。只會循序取出 2D 陣列中所有的 (x, y) 座標組合
+        public static IEnumerable<(int x, int y)> ForEachPos<T>(T[,] array)
+        {
+            for (int y = 0; y < array.GetLength(1); y++)
+            {
+                for (int x = 0; x < array.GetLength(0); x++)
+                {
+                    yield return (x, y);
+                }
+            }
+        }
     }
+
 }
