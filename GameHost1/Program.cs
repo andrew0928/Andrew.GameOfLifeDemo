@@ -6,15 +6,6 @@ namespace GameHost1
 {
     public class Program
     {
-        
-        //public static bool TimePassRule(bool[,] area)
-        //{
-        //    // TODO: fill your code here
-        //    return area[1, 1];
-        //}
-
-
-
         static void Main(string[] args)
         {
             RunGameOfLife();
@@ -54,7 +45,7 @@ namespace GameHost1
         {
             var world = new World(matrix_current, out var god);
 
-            // got god's ability            
+            // got god's power            
             god.TimePass();
             return god.SeeWholeWorld();
         }
