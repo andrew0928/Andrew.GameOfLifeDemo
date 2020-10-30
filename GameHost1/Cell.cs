@@ -8,8 +8,6 @@ namespace GameHost1
 
         public Cell[,] Partners { get; set; }
 
-        public Alarm Alarm { get; set; }
-
         public Cell() 
         {
 
@@ -29,7 +27,6 @@ namespace GameHost1
         /// 5. 當前細胞為死亡狀態時，當周圍有3個存活細胞時，該細胞變成存活狀態。（模擬繁殖）
         /// 6. 可以把最初的細胞結構定義為種子，當所有在種子中的細胞同時被以上規則處理後，可以得到第一代細胞圖。按規則繼續處理當前的細胞圖，可以得到下一代的細胞圖，周而復始。 
         /// </summary>
-        /// <param name="cells">must be bool[3, 3]</param>
         /// <returns></returns>
         public bool IsAlive()
         {
