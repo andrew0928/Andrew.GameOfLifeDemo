@@ -62,21 +62,25 @@ public static bool TimePassRule(bool[,] area)
 
 化成文字，初始狀態是這樣:
 
+```
 x x x x x x  
 x x x x x x  
 x x o o o x  
 x o o o x x  
 x x x x x x  
 x x x x x x  
+```
 
 按照原始的規則，下一個周期應該會變成:
 
+```
 x x x x x x  
 x x x o x x  
 x o x x o x  
 x o x x o x  
 x x o x x x  
 x x x x x x  
+```
 
 我就用這個 case 說明一下加入時間維度的差別。假設時間我都用 msec 為單位，環境每 10 ms 刷新一次，而每個細胞刷新時間為 5 ms, 那麼:
 
