@@ -31,6 +31,7 @@ namespace GameHost1
                         LivesNumToLiveWhenAlive = Cells[x, y].LivesNumToLiveWhenAlive,
                         LivesNumToLiveWhenDead = Cells[x, y].LivesNumToLiveWhenDead,
                         GrowthRate = Cells[x, y].GrowthRate,
+                        GoogleMaps = Cells[x,y].GoogleMaps
                     };
                 }
             }
@@ -67,7 +68,7 @@ namespace GameHost1
                 Id = cellId,
                 GoogleMaps = new GoogleMaps(this),
             };
-            PositionDict.Add(Cells[x, y].Id, new List<int> { x, y });
+            PositionDict.Add(cellId, new List<int> { x, y });
         }
         public void InitRandomMap(int rate)
         {
@@ -83,7 +84,7 @@ namespace GameHost1
                         Id = cellId,
                         GoogleMaps = new GoogleMaps(this),
                     };
-                    PositionDict.Add(Cells[x, y].Id, new List<int> { x, y });
+                    PositionDict.Add(cellId, new List<int> { x, y });
                 }
             }
         }

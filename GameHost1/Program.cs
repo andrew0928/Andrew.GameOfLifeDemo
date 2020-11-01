@@ -12,7 +12,8 @@ namespace GameHost1
 
         private static void RunGameOfLife()
         {
-            var map = new World(50, 20);
+            var world = new World(50, 20);
+            world.InitRandomMap(20);
 
             // TODO: 模擬時間經過取代 gen 迴圈?
 
@@ -23,18 +24,18 @@ namespace GameHost1
                 Thread.Sleep(200);
                 Console.SetCursorPosition(0, 0);
 
-                for (int y = 0; y < map.ColumnNum; y++)
+                for (int y = 0; y < world.ColumnNum; y++)
                 {
-                    for (int x = 0; x < map.RowNum; x++)
+                    for (int x = 0; x < world.RowNum; x++)
                     {
-                        var c = map.Cells[x, y];
+                        var c = world.Cells[x, y];
                         live_count += (c.IsAlive ? 1 : 0);
                         Console.Write(c.IsAlive ? '★' : '☆');
                     }
                     Console.WriteLine();
                 }
 
-                map.GetNextGen();
+                world.GetNextGen();
                 Console.WriteLine($"total lives: {live_count}, round: {gen} / 5000...");
             }
         }
