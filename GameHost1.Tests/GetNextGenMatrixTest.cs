@@ -284,9 +284,7 @@ namespace GameHost1.Tests
             return true;
         }
 
-
-
-        private void CompareMaps(Map source, Map target)
+        private void CompareMaps(World source, World target)
         {
             if (source == null) throw new ArgumentNullException();
             if (target == null) throw new ArgumentNullException();
@@ -304,9 +302,9 @@ namespace GameHost1.Tests
             return;
         }
 
-        private Map _Transform(string[] mapInStr)
+        private World _Transform(string[] mapInStr)
         {
-            var map = new Map(mapInStr[0].Length, mapInStr.Length);
+            var map = new World(mapInStr[0].Length, mapInStr.Length);
 
             int x = 0;
             int y = 0;
@@ -314,7 +312,7 @@ namespace GameHost1.Tests
             {
                 foreach (var c in line)
                 {
-                    map.Cells[x, y].IsAlive = (c == '1');
+                    map.AddCell(x, y, c == '1');
                     x++;
                 }
                 x = 0;

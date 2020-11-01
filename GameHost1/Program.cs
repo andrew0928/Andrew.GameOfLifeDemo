@@ -12,12 +12,9 @@ namespace GameHost1
 
         private static void RunGameOfLife()
         {
-            var map = new Map(50, 20);
+            var map = new World(50, 20);
 
             // TODO: 模擬時間經過取代 gen 迴圈?
-            // var timeMachine = new TimeMachine();
-            // var now = timeMachine.Now;
-            // timeMachine.PassTime(new TimeSpan(0, 0, 1));
 
             for (int gen = 0; gen < 5000; gen++)
             {
