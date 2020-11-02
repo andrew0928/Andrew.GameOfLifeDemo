@@ -17,7 +17,7 @@ namespace GameHost1
 
             for (int count = 0; count < 5000; count++)
             {
-                int live_count = 0;
+                int liveCount = 0;
 
                 Thread.Sleep(200);
                 Console.SetCursorPosition(0, 0);
@@ -27,26 +27,16 @@ namespace GameHost1
                     for (int x = 0; x < map.Width; x++)
                     {
                         var c = map.Matrix[x, y];
-                        live_count += (c.Status ? 1 : 0);
+                        liveCount += (c.Status ? 1 : 0);
                         Console.Write(c.Status ? '★' : '☆');
                     }
                     Console.WriteLine();
                 }
 
-                bool[,] currentMatrix = map.ConvertToBoolMatrix();
-                bool[,] nextMatrix = GetNextGenMatrix(currentMatrix);
-                map.Init(nextMatrix);
+                map = map.GetNextGeneration();
 
-                Console.WriteLine($"total lives: {live_count}, round: {count} / 5000...");
+                Console.WriteLine($"total lives: {liveCount}, round: {count} / 5000...");
             }
-        }
-
-
-        public static bool[,] GetNextGenMatrix(bool[,] matrix)
-        {
-            var map = new Map();
-            map.Init(matrix);
-            return map.GetNextGeneration();
         }
     }
 }

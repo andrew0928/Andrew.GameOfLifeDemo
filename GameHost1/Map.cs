@@ -1,6 +1,4 @@
-﻿using System.Threading;
-
-namespace GameHost1
+﻿namespace GameHost1
 {
     public class Map
     {
@@ -11,6 +9,14 @@ namespace GameHost1
         public Cell[,] Matrix { get; set; }
 
         public Map() { }
+
+        public Map(Cell[,] matrix) 
+        {
+            this.Width = matrix.GetLength(0);
+            this.Height = matrix.GetLength(1);
+            this.Matrix = matrix;
+            SetPartners();
+        }
 
         public void Init(int w, int h)
         {
@@ -23,26 +29,6 @@ namespace GameHost1
                 for (int x = 0; x < Width; x++)
                 {
                     Matrix[x, y] = new Cell(Rate);
-                }
-            }
-
-            SetPartners();
-        }
-
-        public void Init(bool[,] matrix)
-        {
-            this.Width = matrix.GetLength(0);
-            this.Height = matrix.GetLength(1);
-
-            Matrix = new Cell[Width, Height];
-            for (int y = 0; y < Height; y++)
-            {
-                for (int x = 0; x < Width; x++)
-                {
-                    Matrix[x, y] = new Cell
-                    {
-                        Status = matrix[x, y]
-                    };
                 }
             }
 
@@ -77,18 +63,19 @@ namespace GameHost1
             }
         }
 
-        public bool[,] GetNextGeneration() 
+        public Map GetNextGeneration() 
         {
             var next = new Map();
-            next.Init(ConvertToBoolMatrix());
-            for (int y = 0; y < Height; y++)
+            next.Init(this.Width, this.Height);
+
+            for (int y = 0; y < next.Height; y++)
             {
-                for (int x = 0; x < Width; x++)
+                for (int x = 0; x < next.Width; x++)
                 {
                     next.Matrix[x, y].Status = Matrix[x, y].IsAlive();
                 }
             }
-            return next.ConvertToBoolMatrix();
+            return next;
         }
 
         public bool[,] ConvertToBoolMatrix() 
