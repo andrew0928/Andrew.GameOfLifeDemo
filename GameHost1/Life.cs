@@ -5,7 +5,7 @@ using System.Threading;
 
 namespace GameHost1
 {
-    public class Life
+    public class Life : ILife
     {
         // game rules lookup table
         private static bool[] _survival_rules = new bool[] { false, false, true, true, false, false, false, false, false };
@@ -16,7 +16,11 @@ namespace GameHost1
 
         public int ID { get; private set; }
         public int Frame { get; private set; }
+       
         public bool IsAlive { get; private set; }
+
+        private int _start_frame = 0;
+        private int _generation = 0;
 
         // for snapshot use only
         private Life(Life item)
@@ -25,14 +29,18 @@ namespace GameHost1
             this._sensibility = null;
             this.IsAlive = item.IsAlive;
             this.Frame = 0;
+
+            this._start_frame = 0;
         }
 
-        public Life(out Sensibility sensibility, bool alive, int frame)
+        public Life(out Sensibility sensibility, bool alive, int frame, int start_frames = 0)
         {
             this.ID = Interlocked.Increment(ref _seed);
             this._sensibility = sensibility = new Sensibility(this);
             this.IsAlive = alive;
             this.Frame = frame;
+
+            this._start_frame = start_frames;
         }
 
         private int TimePass()
@@ -53,7 +61,8 @@ namespace GameHost1
             }
 
             this.IsAlive = result;
-            return this.Frame;
+
+            return (this._generation++ == 0) ? (this._start_frame) : (this.Frame);
         }
 
         public class Sensibility

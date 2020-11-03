@@ -6,7 +6,7 @@ using System.Text;
 
 namespace GameHost1
 {
-    public class World
+    public class World : IWorld
     {
         public readonly (int width, int depth) Dimation;
         private Life.Sensibility[,] _maps_current_life_sense;
@@ -56,9 +56,10 @@ namespace GameHost1
             return this._frame;
         }
 
-        public IEnumerable<(int time, bool[,] matrix)> Running(int until_frames = 10000)
+        //public IEnumerable<(int time, bool[,] matrix)> Running(int until_frames = 10000)
+        public IEnumerable<(TimeSpan time, ILife[,] matrix)> Running(TimeSpan until)
         {
-            //SortedList<ToDoItem, object> todos = new SortedList<ToDoItem, object>(new ToDoItemComparer());
+            int until_frames = (int)until.TotalMilliseconds;
             SortedSet<ToDoItem> todoset = new SortedSet<ToDoItem>(new ToDoItemComparer());
 
             foreach(var (x, y) in ForEachPos<Life.Sensibility>(this._maps_current_life_sense))
@@ -94,7 +95,7 @@ namespace GameHost1
                     NextTimeFrame = item.NextTimeFrame + item.TimePass()
                 });
 
-                if (item.IsWorld) yield return (item.NextTimeFrame, this.GodVision());
+                if (item.IsWorld) yield return (TimeSpan.FromMilliseconds(item.NextTimeFrame), this._maps_snapshot);
                 if (item.NextTimeFrame >= until_frames) break;
             } while (true);
         }
@@ -128,17 +129,17 @@ namespace GameHost1
             }
         }
 
-        private bool[,] GodVision()
-        {
-            bool[,] matrix = new bool[this.Dimation.width, this.Dimation.depth];
+        //private bool[,] GodVision()
+        //{
+        //    bool[,] matrix = new bool[this.Dimation.width, this.Dimation.depth];
 
-            foreach (var (x, y) in ForEachPos<Life.Sensibility>(this._maps_current_life_sense))
-            {
-                matrix[x, y] = (this._maps_snapshot[x, y] != null && this._maps_snapshot[x, y].IsAlive);
-            }
+        //    foreach (var (x, y) in ForEachPos<Life.Sensibility>(this._maps_current_life_sense))
+        //    {
+        //        matrix[x, y] = (this._maps_snapshot[x, y] != null && this._maps_snapshot[x, y].IsAlive);
+        //    }
 
-            return matrix;
-        }
+        //    return matrix;
+        //}
 
         // only life itself can do this
         private Life[,] SeeAround((int x, int y) pos)
