@@ -62,7 +62,7 @@ namespace GameHost1
 
             this.IsAlive = result;
 
-            return (this._generation++ == 0) ? (this._start_frame) : (this.Frame);
+            return (this._generation++ == 0) ? (this._start_frame + this.Frame) : (this.Frame);
         }
 
         public class Sensibility
