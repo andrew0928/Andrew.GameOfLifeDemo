@@ -8,6 +8,8 @@ namespace GameHost1
 
         public Cell[,] Partners { get; set; }
 
+        public Alarm Alarm { get; set; }
+
         public Cell() 
         {
 
@@ -17,6 +19,8 @@ namespace GameHost1
         {
             Random rnd = new Random();
             Status = (rnd.Next(100) < rate);
+            Alarm = new Alarm(Evolve);
+            Alarm.Start();
         }
 
         /// <summary>

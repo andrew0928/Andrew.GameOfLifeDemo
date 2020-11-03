@@ -12,7 +12,10 @@ namespace GameHost1
         {
             this.Action = action;
 
-            this.Timer = new Timer(200);
+            Random rnd = new Random();
+            var temp = rnd.Next(100) + 100;
+
+            this.Timer = new Timer(10);
             this.Timer.Elapsed += OnTimedEvent;
             this.Timer.AutoReset = true;
             this.Timer.Enabled = true;

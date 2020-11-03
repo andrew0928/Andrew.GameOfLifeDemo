@@ -10,6 +10,10 @@
 
         public Map() { }
 
+        /// <summary>
+        /// 測試用
+        /// </summary>
+        /// <param name="matrix"></param>
         public Map(Cell[,] matrix) 
         {
             this.Width = matrix.GetLength(0);
@@ -55,7 +59,7 @@
                             else if (cy < 0) partners[ax, ay].Status = false;
                             else if (cx >= Matrix.GetLength(0)) partners[ax, ay].Status = false;
                             else if (cy >= Matrix.GetLength(1)) partners[ax, ay].Status = false;
-                            else partners[ax, ay] = Matrix[cx, cy];
+                            else partners[ax, ay].Status = Matrix[cx, cy].Status;
                         }
                     }
                     Matrix[x, y].Partners = partners;
@@ -65,30 +69,21 @@
 
         public Map GetNextGeneration() 
         {
-            var next = new Map();
-            next.Init(this.Width, this.Height);
+            var next = Clone();
 
             for (int y = 0; y < next.Height; y++)
             {
                 for (int x = 0; x < next.Width; x++)
                 {
-                    next.Matrix[x, y].Status = Matrix[x, y].IsAlive();
+                    next.Matrix[x, y].Status = Matrix[x, y].Status;
                 }
             }
             return next;
         }
 
-        public bool[,] ConvertToBoolMatrix() 
+        public Map Clone() 
         {
-            var result = new bool[Width, Height];
-            for (int y = 0; y < Height; y++)
-            {
-                for (int x = 0; x < Width; x++)
-                {
-                    result[x, y] = Matrix[x, y].Status;
-                }
-            }
-            return result;
+            return new Map(this.Matrix);
         }
     }
 }
