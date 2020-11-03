@@ -19,7 +19,7 @@ namespace GameHost1
             {
                 int liveCount = 0;
 
-                Thread.Sleep(200);
+                Thread.Sleep(500);
                 Console.SetCursorPosition(0, 0);
 
                 for (int y = 0; y < map.Height; y++)
