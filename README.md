@@ -132,7 +132,73 @@ snapshot(0ms)       current(5ms)        current(10ms)     snapshot(10ms)
 
 跳過時間函數，也許有些細節要自己處理 (比如你要另外表示 `目前時間` 的方式，用來替代 DateTime.Now 本來的職責)，但是相對的好處是，你可以加速模擬的時間，不再受到時間的限制... (有點像 SAO underworld 的 1000x 加速啊啊啊 XDD)。
 
-過關的標準，必須通過 GameHost2 隨附的單元測試 (還沒寫好...)，同時請務必維持程式碼的精簡。後半段的過關標準我無法量化，同樣的，如果是我公司的同仁，採取當面說明設計想法為準。
+
+
+// 2020/11/03 補:
+
+這邊交代一下 milestone 3 的過關條件。首先，題目提供了這兩個 interface:
+
+```csharp
+
+public interface IWorld
+{
+    public bool Init(bool[,] init_matrix, int[,] init_cell_frame, int[,] init_cell_start_frame, int world_frame);
+
+    public IEnumerable<(TimeSpan time, ILife[,] matrix)> Running(TimeSpan until);
+}
+
+public interface ILife
+{
+    public bool IsAlive { get; }
+}
+
+```
+
+這兩個 interface 應該簡單到不用說明了吧? 擺放細胞的 "世界"，就是 ```IWorld```, 這 interface 只提供兩個 method, 第一個是 init:
+
+```csharp
+
+public bool Init(bool[,] init_matrix, int[,] init_cell_frame, int[,] init_cell_start_frame, int world_frame);
+
+```
+
+給定一個未初始化過的 ```IWorld``` instance, 呼叫 ```Init``` 後就能按照條件把細胞擺到位。背後的實作就要靠你自己了。第一個參數是 ```bool[,] init_matrix``` , 決定這個世界每個細胞的初始狀態 ( true: live, false: dead ). 第二個參數 ```int[,] init_cell_frame``` 則代表每個細胞間隔多久 (單位: msec) 會進到下個世代。第三個參數 ```int[,] init_cell_start_frame``` 代表細胞在世界啟動後多久會開始活動 (就是從創世紀開始算，何時開始第一個世代)，單位一樣是 msec. 最後一個參數 ```int world_frame```, 則代表這世界多久會刷新一次。刷新後的世界狀態，別的細胞才能感知的到對方。
+
+第二個 method 稍作說明一下好了:
+
+```csharp
+
+public IEnumerable<(TimeSpan time, ILife[,] matrix)> Running(TimeSpan until);
+
+```
+
+要讓世界開始運轉，只要呼叫 ```IWorld.Running()``` 即可。傳進的參數只有一個: ```TimeSpan until```, 代表從世界開始運轉後，要轉多久才會停止 (世界末日)。這邊都採用相對時間，因此我用 ```TimeSpan``` 的型別。
+
+傳回值特別一點，我直接用 ```IEnumerable<(TimeSpan, ILife[,])>``` 來代表。每當這個世界重新刷新一次，就會傳回一對 ```TimeSpan 及 ILife[,]``` 的資訊，來描述這瞬間世界的狀態。 ```TimeSpan``` 代表這瞬間的時間，是從創世紀以來到這時隔了多久? ```ILife[,]``` 則代表這瞬間這世界每個角落的生命狀態。
+
+你不需要在世界的模擬程式內，做任何的 "等待" (例如 ```Task.Delay()```, 或是 ```Thread.Sleep()``` ), 我在主程式，顯示畫面時統一處理一次就行了。我偷瞄了幾位參賽者寫到一半的 milestone3 的 code，已經偷偷用了 ```Timer```, ```Sleep```, ```Delay``` 之類的 code ... 其實都用了也無訪，多做一次這動作而已，只要想辦法最後用這介面的形式傳回結果給我就好了。
+
+```ILife``` 只有一個 property: ```bool IsAlive { get; }``` , 代表這細胞的狀態，我想應該不用多作說明了。
+
+最後一個必填的 code, 我用來簡化 Factory / DI container 偷懶用的 method... 直接填在 ```Program.CreateWorld()``` 就好了:
+
+```csharp
+
+public static IWorld CreateWorld(int width, int depth)
+{
+    //
+    //  ToDo: fill your code HERE.
+    //
+    throw new NotImplementedException();
+}
+
+```
+
+世界的大小必須一開始就指定，之後可以 ```Init()``` 一次，把生命擺到定位，就可以啟動世界了。主程式，以及單元測試，都已經按照這個規則寫好了，剩下的你只要把 code 填好，讓測試都通過 (請不要動任何 unit test code ...), 如果你想欣賞一下細胞演化的實況，直接 run console apps 也可以。
+
+準備好了就把 PR 發過來吧! 我會在這個 interface 的基礎追加其他的測試的。要不要放出來就看我的心情了 XDD, 除了增加其他組合的 patterns 之外，我也 (可能) 會追加超大的世界地圖，看看有誰的 code 會跑不動或是跑到 ```OutOfMemoryException```...
+
+
 
 ## Milestone 4, 大亂鬥
 

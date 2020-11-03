@@ -23,12 +23,16 @@ namespace GameHost1
     {
         public static IWorld CreateWorld(int width, int depth)
         {
-            return new World(width, depth);
+            //
+            //  ToDo: fill your code HERE.
+            //
+            throw new NotImplementedException();
         }
+
         private static void Init(bool[,] matrix, int[,] frames, int cell_frame = 10, int rate = 20)
         {
             Random rnd = new Random();
-            foreach (var (x, y) in World.ForEachPos<bool>(matrix))
+            foreach (var (x, y) in Program.ForEachPos<bool>(matrix))
             {
                 matrix[x, y] = (rnd.Next(100) < rate);
                 frames[x, y] = cell_frame;
@@ -83,23 +87,21 @@ namespace GameHost1
             }
         }
 
-        /*
-        public static bool[,] GetNextGenMatrix(bool[,] matrix)
+
+
+
+
+        #region utility method(s)...
+        public static IEnumerable<(int x, int y)> ForEachPos<T>(T[,] input)
         {
-            int[,] frames = new int[matrix.GetLength(0), matrix.GetLength(1)];
-            int[,] start_frames = new int[matrix.GetLength(0), matrix.GetLength(1)];
-            foreach (var (x, y) in World.ForEachPos<bool>(matrix)) frames[x, y] = 10;
-
-            var world = new World(matrix, frames, start_frames, 10);
-
-            bool[,] result = new bool[matrix.GetLength(0), matrix.GetLength(1)];
-            var lifes = world.Running(TimeSpan.FromSeconds(100)).First().matrix;
-            foreach (var (x, y) in World.ForEachPos<ILife>(lifes)) result[x, y] = lifes[x, y].IsAlive;
-
-            return result;
+            for(int y = 0; y < input.GetLength(1); y++)
+            {
+                for (int x = 0; x < input.GetLength(0); x++)
+                {
+                    yield return (x, y);
+                }
+            }
         }
-        */
-
-
+        #endregion
     }
 }
