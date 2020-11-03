@@ -19,36 +19,55 @@ namespace GameHost1
         private Dictionary<Life, (int x, int y)> _links = new Dictionary<Life, (int x, int y)>();
 
 
-        public World(bool[,] init_matrix, int[,] init_cell_frame, int world_frame)
+        public World(int width, int depth)
+        {
+            this.Dimation = (width, depth);
+            this._maps_current_life_sense = new Life.Sensibility[this.Dimation.width, this.Dimation.depth];
+            this._maps_snapshot = new Life[this.Dimation.width, this.Dimation.depth];
+        }
+
+
+        public World(bool[,] init_matrix, int[,] init_cell_frame, int[,] init_cell_start_frame, int world_frame)
         {
             this.Dimation = (init_matrix.GetLength(0), init_matrix.GetLength(1));
             this._maps_current_life_sense = new Life.Sensibility[this.Dimation.width, this.Dimation.depth];
             this._maps_snapshot = new Life[this.Dimation.width, this.Dimation.depth];
+
+            if (this.Init(init_matrix, init_cell_frame, init_cell_start_frame, world_frame) == false) throw new ArgumentException();
+
+        }
+
+
+        private bool _is_init = false;
+        public bool Init(bool[,] init_matrix, int[,] init_cell_frame, int[,] init_cell_start_frame, int world_frame)
+        {
+            if (this._is_init) return false;
+            if (this.Dimation.width != init_matrix.GetLength(0) || this.Dimation.depth != init_matrix.GetLength(1)) return false;
+            if (this.Dimation.width != init_cell_frame.GetLength(0) || this.Dimation.depth != init_cell_frame.GetLength(1)) return false;
+            if (this.Dimation.width != init_cell_start_frame.GetLength(0) || this.Dimation.depth != init_cell_start_frame.GetLength(1)) return false;
+
             this._frame = world_frame;
 
-            foreach(var (x, y) in ForEachPos<bool>(init_matrix))
+            foreach (var (x, y) in ForEachPos<bool>(init_matrix))
             {
-                this.Born(init_matrix[x, y], init_cell_frame[x, y], (x, y));
+                if (this._maps_current_life_sense[x, y] != null)
+                {
+                    throw new ArgumentOutOfRangeException();
+                }
+
+                var cell = new Life(out var sense, init_matrix[x, y], init_cell_frame[x, y]);
+                sense.InitWorldSide(this, (x, y), () =>
+                {
+                    return this.SeeAround((x, y));
+                });
+                this._maps_current_life_sense[x, y] = sense;
+
             }
 
-            this.RefreshFrame();
+            this._is_init = true;
+            return true;
         }
 
-        private void Born(bool alive, int cell_frame, (int x, int y) position)
-        {
-            if (this._maps_current_life_sense[position.x, position.y] != null)
-            {
-                throw new ArgumentOutOfRangeException();
-            }
-
-            var cell = new Life(out var sense, alive, cell_frame);
-            sense.InitWorldSide(this, position, () =>
-            {
-                return this.SeeAround(position);
-            });
-            this._maps_current_life_sense[position.x, position.y] = sense;
-
-        }
 
         private int TimePass()
         {
@@ -56,9 +75,10 @@ namespace GameHost1
             return this._frame;
         }
 
-        //public IEnumerable<(int time, bool[,] matrix)> Running(int until_frames = 10000)
         public IEnumerable<(TimeSpan time, ILife[,] matrix)> Running(TimeSpan until)
         {
+            this.RefreshFrame();
+
             int until_frames = (int)until.TotalMilliseconds;
             SortedSet<ToDoItem> todoset = new SortedSet<ToDoItem>(new ToDoItemComparer());
 
@@ -117,10 +137,6 @@ namespace GameHost1
             }
         }
 
-
-
-
-
         private void RefreshFrame()
         {
             foreach (var (x, y) in ForEachPos<Life.Sensibility>(this._maps_current_life_sense))
@@ -129,17 +145,6 @@ namespace GameHost1
             }
         }
 
-        //private bool[,] GodVision()
-        //{
-        //    bool[,] matrix = new bool[this.Dimation.width, this.Dimation.depth];
-
-        //    foreach (var (x, y) in ForEachPos<Life.Sensibility>(this._maps_current_life_sense))
-        //    {
-        //        matrix[x, y] = (this._maps_snapshot[x, y] != null && this._maps_snapshot[x, y].IsAlive);
-        //    }
-
-        //    return matrix;
-        //}
 
         // only life itself can do this
         private Life[,] SeeAround((int x, int y) pos)

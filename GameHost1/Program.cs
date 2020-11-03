@@ -8,6 +8,8 @@ namespace GameHost1
 {
     public interface IWorld
     {
+        public bool Init(bool[,] init_matrix, int[,] init_cell_frame, int[,] init_cell_start_frame, int world_frame);
+
         public IEnumerable<(TimeSpan time, ILife[,] matrix)> Running(TimeSpan until);
     }
 
@@ -19,13 +21,36 @@ namespace GameHost1
 
     public class Program
     {
-        static void Main(string[] args)
+        public static IWorld CreateWorld(int width, int depth)
         {
+            return new World(width, depth);
+        }
+        private static void Init(bool[,] matrix, int[,] frames, int cell_frame = 10, int rate = 20)
+        {
+            Random rnd = new Random();
+            foreach (var (x, y) in World.ForEachPos<bool>(matrix))
+            {
+                matrix[x, y] = (rnd.Next(100) < rate);
+                frames[x, y] = cell_frame;
+            }
+        }
+
+        public static void Main(string[] args)
+        {
+            IWorld world = CreateWorld(50, 20);
+
+            #region Init the world...
+
             bool[,] matrix = new bool[50, 20];
             int[,] frames = new int[50, 20];
+            int[,] start_frames = new int[50, 20];
             Init(matrix, frames, 100, 20);
 
-            IWorld world = new World(matrix, frames, 100);
+            world.Init(matrix, frames, start_frames, 100);
+            
+            #endregion
+
+
 
             int count = 0;
 
@@ -58,13 +83,14 @@ namespace GameHost1
             }
         }
 
-
+        /*
         public static bool[,] GetNextGenMatrix(bool[,] matrix)
         {
             int[,] frames = new int[matrix.GetLength(0), matrix.GetLength(1)];
+            int[,] start_frames = new int[matrix.GetLength(0), matrix.GetLength(1)];
             foreach (var (x, y) in World.ForEachPos<bool>(matrix)) frames[x, y] = 10;
 
-            var world = new World(matrix, frames, 10);
+            var world = new World(matrix, frames, start_frames, 10);
 
             bool[,] result = new bool[matrix.GetLength(0), matrix.GetLength(1)];
             var lifes = world.Running(TimeSpan.FromSeconds(100)).First().matrix;
@@ -72,15 +98,8 @@ namespace GameHost1
 
             return result;
         }
+        */
 
-        private static void Init(bool[,] matrix, int[,] frames, int cell_frame = 10, int rate = 20)
-        {
-            Random rnd = new Random();
-            foreach(var (x, y) in World.ForEachPos<bool>(matrix))
-            {
-                matrix[x, y] = (rnd.Next(100) < rate);
-                frames[x, y] = cell_frame;
-            }
-        }
+
     }
 }
