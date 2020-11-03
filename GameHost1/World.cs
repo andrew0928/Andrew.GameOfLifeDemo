@@ -77,6 +77,8 @@ namespace GameHost1
 
         public IEnumerable<(TimeSpan time, ILife[,] matrix)> Running(TimeSpan until)
         {
+            if (!this._is_init) throw new InvalidOperationException();
+
             this.RefreshFrame();
 
             int until_frames = (int)until.TotalMilliseconds;

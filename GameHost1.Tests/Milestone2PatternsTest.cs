@@ -6,7 +6,7 @@ using System.Text;
 namespace GameHost1.Tests
 {
     [TestClass]
-    public class GetNextGenMatrixPatternsTest
+    public class Milestone2PatternsTest
     {
         [TestMethod("穩定狀態1: 板凳(1)")]
         public void StaticPattern1Test()
