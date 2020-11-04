@@ -23,7 +23,20 @@ namespace GameHost1
     {
         public static IWorld CreateWorld(int width, int depth)
         {
-            return new World(width, depth);
+            var world= new World(width, depth);
+
+            #region Init the world...
+
+            bool[,] matrix = new bool[width, depth];
+            int[,] frames = new int[width, depth];
+            int[,] start_frames = new int[width, depth];
+            Init(matrix, frames, 100, 20);
+
+            world.Init(matrix, frames, start_frames, 100);
+
+            #endregion
+
+            return world;
         }
         private static void Init(bool[,] matrix, int[,] frames, int cell_frame = 10, int rate = 20)
         {
@@ -39,16 +52,16 @@ namespace GameHost1
         {
             IWorld world = CreateWorld(50, 20);
 
-            #region Init the world...
+            //#region Init the world...
 
-            bool[,] matrix = new bool[50, 20];
-            int[,] frames = new int[50, 20];
-            int[,] start_frames = new int[50, 20];
-            Init(matrix, frames, 100, 20);
+            //bool[,] matrix = new bool[50, 20];
+            //int[,] frames = new int[50, 20];
+            //int[,] start_frames = new int[50, 20];
+            //Init(matrix, frames, 100, 20);
 
-            world.Init(matrix, frames, start_frames, 100);
+            //world.Init(matrix, frames, start_frames, 100);
             
-            #endregion
+            //#endregion
 
 
 
