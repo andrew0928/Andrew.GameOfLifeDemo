@@ -11,15 +11,13 @@ namespace GameHost1
         public IEnumerable<(TimeSpan time, ILife[,] matrix)> Running(TimeSpan until);
     }
 
+
     public interface ILife
     {
         public bool IsAlive { get; }
     }
 
-    public interface IRunningObject
-    {
-        public IEnumerable<int> AsTimePass();
-    }
+
 
     public static class ArrayHelper
     {

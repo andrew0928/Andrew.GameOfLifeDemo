@@ -6,7 +6,27 @@ using System.Text;
 
 namespace GameHost1
 {
-    public class World : IWorld, IRunningObject
+    /// <summary>
+    /// 提供 Life 視覺能力的 interface, 應該由 World 來提供 implementation.
+    /// </summary>
+    public interface ILifeVision
+    {
+        public Life[,] SeeAround(int x, int y);
+    }
+
+    /// <summary>
+    /// 驅動這整個世界 realtime 演進的所有生物必須實作的 interface.
+    /// 公開的介面代表: 每次演化後透過 yield return 告知環境，下次演化預計的時間點 ( int, 單位 msec )。
+    /// 
+    /// 透過 C# 編譯器支援的 yield return 來實作世界的排程器與每個生命之間的協作。
+    /// </summary>
+    public interface IRunningObject
+    {
+        public IEnumerable<int> AsTimePass();
+    }
+
+
+    public class World : IWorld, IRunningObject, ILifeVision
     {
         public readonly (int width, int depth) Dimation;
         private Life.Sensibility[,] _maps_current_life_sense;
@@ -46,10 +66,11 @@ namespace GameHost1
                 }
 
                 var cell = new Life(out var sense, init_matrix[x, y], init_cell_frame[x, y]);
-                sense.InitWorldSide(this, (x, y), () =>
-                {
-                    return this.SeeAround((x, y));
-                });
+                //sense.InitWorldSide(this, (x, y), () =>
+                //{
+                //    return this.SeeAround((x, y));
+                //});
+                sense.InitWorldSide(this, (x, y));
                 this._maps_current_life_sense[x, y] = sense;
 
             }
@@ -108,33 +129,6 @@ namespace GameHost1
         }
 
 
-        private class RunningObjectRecord
-        {
-            public IRunningObject Source { get; private set; }
-
-            public IEnumerator<int> Enumerator { get; private set; }
-
-            public RunningObjectRecord(IRunningObject source)
-            {
-                this.Source = source;
-                this.Enumerator = this.Source.AsTimePass().GetEnumerator();
-                if (!this.Enumerator.MoveNext()) throw new InvalidOperationException();
-            }
-
-            public class Comparer : IComparer<RunningObjectRecord>
-            {
-                public int Compare([AllowNull] RunningObjectRecord x, [AllowNull] RunningObjectRecord y)
-                {
-                    if (x.Enumerator.Current == y.Enumerator.Current)
-                    {
-                        return
-                            ((x.Source is World) ? (-1) : ((x.Source as Life).ID)) - 
-                            ((y.Source is World) ? (-1) : ((y.Source as Life).ID));
-                    }
-                    return x.Enumerator.Current - y.Enumerator.Current;
-                }
-            }
-        }
 
 
         private void RefreshFrame()
@@ -145,10 +139,14 @@ namespace GameHost1
             }
         }
 
-
-        // only life itself can do this
-        private Life[,] SeeAround((int x, int y) pos)
+        Life[,] ILifeVision.SeeAround(int x, int y)
         {
+            var pos = (x, y);
+        //    throw new NotImplementedException();
+        //}
+        //// only life itself can do this
+        //private Life[,] SeeAround((int x, int y) pos)
+        //{
             Life[,] result = new Life[3, 3];
 
             result[0, 0] = this.SeePosition(pos.x - 1, pos.y - 1);
@@ -173,6 +171,40 @@ namespace GameHost1
             if (y < 0) return null;
             if (y >= this.Dimation.depth) return null;
             return this._maps_snapshot[x, y];
+        }
+
+
+
+
+
+
+
+        private class RunningObjectRecord
+        {
+            public IRunningObject Source { get; private set; }
+
+            public IEnumerator<int> Enumerator { get; private set; }
+
+            public RunningObjectRecord(IRunningObject source)
+            {
+                this.Source = source;
+                this.Enumerator = this.Source.AsTimePass().GetEnumerator();
+                if (!this.Enumerator.MoveNext()) throw new InvalidOperationException();
+            }
+
+            public class Comparer : IComparer<RunningObjectRecord>
+            {
+                public int Compare([AllowNull] RunningObjectRecord x, [AllowNull] RunningObjectRecord y)
+                {
+                    if (x.Enumerator.Current == y.Enumerator.Current)
+                    {
+                        return
+                            ((x.Source is World) ? (-1) : ((x.Source as Life).ID)) -
+                            ((y.Source is World) ? (-1) : ((y.Source as Life).ID));
+                    }
+                    return x.Enumerator.Current - y.Enumerator.Current;
+                }
+            }
         }
 
     }

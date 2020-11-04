@@ -22,6 +22,7 @@ namespace GameHost1
         public bool IsAlive { get; private set; }
 
         private int _time_passed = 0;
+        private int _generation = 0;
 
         // for snapshot use only
         private Life(Life item)
@@ -66,34 +67,39 @@ namespace GameHost1
 
                 this.IsAlive = result;
                 this._time_passed += this.Frame;
+                this._generation++;
+
                 yield return this._time_passed;
             }
         }
 
         public class Sensibility
         {
-            private World _reality;
+            //private World _reality;
+            private ILifeVision _vision;
+
             public readonly Life Itself;
             private (int x, int y) _position;
 
-            private Func<Life[,]> _visibility = (() => { throw new InvalidOperationException("not initialized."); });
+            //private Func<Life[,]> _visibility = (() => { throw new InvalidOperationException("not initialized."); });
 
             public Sensibility(Life itself)
             {
                 this.Itself = itself;
             }
 
-            public void InitWorldSide(World reality, (int x, int y) position, Func<Life[,]> visibility)
+            public void InitWorldSide(ILifeVision reality, (int x, int y) position/*, Func<Life[,]> visibility*/)
             {
-                this._reality = reality;
+                this._vision = reality;
                 this._position = position;
-                this._visibility = visibility;
+                //this._visibility = visibility;
             }
 
             public Life[,] SeeAround()
             {
-                if (this._reality == null) throw new InvalidOperationException("world not initialized.");
-                return this._visibility();
+                if (this._vision == null) throw new InvalidOperationException("world not initialized.");
+                //return this._visibility();
+                return this._vision.SeeAround(this._position.x, this._position.y);
             }
 
             public Life TakeSnapshot()
