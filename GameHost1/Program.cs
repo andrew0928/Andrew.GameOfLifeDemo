@@ -6,17 +6,6 @@ using System.Threading;
 
 namespace GameHost1
 {
-    public interface IWorld
-    {
-        public bool Init(bool[,] init_matrix, int[,] init_cell_frame, int[,] init_cell_start_frame, int world_frame);
-
-        public IEnumerable<(TimeSpan time, ILife[,] matrix)> Running(TimeSpan until);
-    }
-
-    public interface ILife
-    {
-        public bool IsAlive { get; }
-    }
 
 
     public class Program
@@ -28,7 +17,7 @@ namespace GameHost1
         private static void Init(bool[,] matrix, int[,] frames, int cell_frame = 10, int rate = 20)
         {
             Random rnd = new Random();
-            foreach (var (x, y) in World.ForEachPos<bool>(matrix))
+            foreach (var (x, y) in ArrayHelper.ForEachPos<bool>(matrix))
             {
                 matrix[x, y] = (rnd.Next(100) < rate);
                 frames[x, y] = cell_frame;
@@ -82,24 +71,5 @@ namespace GameHost1
                 Console.WriteLine($"total lives: {live_count}, time frame: {time} / {until}...");
             }
         }
-
-        /*
-        public static bool[,] GetNextGenMatrix(bool[,] matrix)
-        {
-            int[,] frames = new int[matrix.GetLength(0), matrix.GetLength(1)];
-            int[,] start_frames = new int[matrix.GetLength(0), matrix.GetLength(1)];
-            foreach (var (x, y) in World.ForEachPos<bool>(matrix)) frames[x, y] = 10;
-
-            var world = new World(matrix, frames, start_frames, 10);
-
-            bool[,] result = new bool[matrix.GetLength(0), matrix.GetLength(1)];
-            var lifes = world.Running(TimeSpan.FromSeconds(100)).First().matrix;
-            foreach (var (x, y) in World.ForEachPos<ILife>(lifes)) result[x, y] = lifes[x, y].IsAlive;
-
-            return result;
-        }
-        */
-
-
     }
 }

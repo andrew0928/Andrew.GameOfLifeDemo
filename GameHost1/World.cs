@@ -6,12 +6,13 @@ using System.Text;
 
 namespace GameHost1
 {
-    public class World : IWorld
+    public class World : IWorld, IRunningObject
     {
         public readonly (int width, int depth) Dimation;
         private Life.Sensibility[,] _maps_current_life_sense;
 
         private int _frame;
+        private int _time_passed = 0;
 
         // 上一個 frame 的地圖快照。所有 life / god 的視覺都會觀察到這個 frame 的景物
         private Life[,] _maps_snapshot;
@@ -27,17 +28,6 @@ namespace GameHost1
         }
 
 
-        public World(bool[,] init_matrix, int[,] init_cell_frame, int[,] init_cell_start_frame, int world_frame)
-        {
-            this.Dimation = (init_matrix.GetLength(0), init_matrix.GetLength(1));
-            this._maps_current_life_sense = new Life.Sensibility[this.Dimation.width, this.Dimation.depth];
-            this._maps_snapshot = new Life[this.Dimation.width, this.Dimation.depth];
-
-            if (this.Init(init_matrix, init_cell_frame, init_cell_start_frame, world_frame) == false) throw new ArgumentException();
-
-        }
-
-
         private bool _is_init = false;
         public bool Init(bool[,] init_matrix, int[,] init_cell_frame, int[,] init_cell_start_frame, int world_frame)
         {
@@ -48,7 +38,7 @@ namespace GameHost1
 
             this._frame = world_frame;
 
-            foreach (var (x, y) in ForEachPos<bool>(init_matrix))
+            foreach (var (x, y) in ArrayHelper.ForEachPos<bool>(init_matrix))
             {
                 if (this._maps_current_life_sense[x, y] != null)
                 {
@@ -69,79 +59,87 @@ namespace GameHost1
         }
 
 
-        private int TimePass()
+        IEnumerable<int> IRunningObject.AsTimePass()
         {
-            this.RefreshFrame();
-            return this._frame;
+            while(true)
+            {
+                this.RefreshFrame();
+                yield return this._time_passed += this._frame;
+            }
         }
+
 
         public IEnumerable<(TimeSpan time, ILife[,] matrix)> Running(TimeSpan until)
         {
             if (!this._is_init) throw new InvalidOperationException();
 
             this.RefreshFrame();
-
             int until_frames = (int)until.TotalMilliseconds;
-            SortedSet<ToDoItem> todoset = new SortedSet<ToDoItem>(new ToDoItemComparer());
 
-            foreach(var (x, y) in ForEachPos<Life.Sensibility>(this._maps_current_life_sense))
+            SortedSet<RunningObjectRecord> todoset = new SortedSet<RunningObjectRecord>(new RunningObjectRecord.Comparer());
+
+            foreach(var (x, y) in ArrayHelper.ForEachPos<Life.Sensibility>(this._maps_current_life_sense))
             {
                 var sense = this._maps_current_life_sense[x, y];
-                todoset.Add(new ToDoItem()
-                {
-                    ID = sense.Itself.ID,
-                    IsWorld = false,
-                    TimePass = sense.TimePass,
-                    NextTimeFrame = sense.TimePass()
-                });
+                todoset.Add(new RunningObjectRecord(sense.Itself));
             }
-
-            todoset.Add(new ToDoItem()
-            {
-                ID = -1,
-                IsWorld = true,
-                TimePass = this.TimePass,
-                NextTimeFrame = this.TimePass()
-            });
+            todoset.Add(new RunningObjectRecord(this));
 
             do
             {
                 var item = todoset.First();
 
                 todoset.Remove(item);
-                todoset.Add(new ToDoItem()
-                {
-                    ID = item.ID,
-                    IsWorld = item.IsWorld,
-                    TimePass = item.TimePass,
-                    NextTimeFrame = item.NextTimeFrame + item.TimePass()
-                });
 
-                if (item.IsWorld) yield return (TimeSpan.FromMilliseconds(item.NextTimeFrame), this._maps_snapshot);
-                if (item.NextTimeFrame >= until_frames) break;
+                if (item.Enumerator.MoveNext())
+                {
+                    todoset.Add(item);
+                }
+                else
+                {
+                    // yield break. means the life was terminated.
+                    continue;
+                }
+
+                if (item.Source is World) yield return (TimeSpan.FromMilliseconds(item.Enumerator.Current), this._maps_snapshot);
+                if (item.Enumerator.Current >= until_frames) break;
+
             } while (true);
         }
 
-        private class ToDoItem
-        {
-            public int ID;
-            public bool IsWorld;
-            public Func<int> TimePass;
-            public int NextTimeFrame;
-        }
 
-        private class ToDoItemComparer : IComparer<ToDoItem>
+        private class RunningObjectRecord
         {
-            public int Compare([AllowNull] ToDoItem x, [AllowNull] ToDoItem y)
+            public IRunningObject Source { get; private set; }
+
+            public IEnumerator<int> Enumerator { get; private set; }
+
+            public RunningObjectRecord(IRunningObject source)
             {
-                if (x.NextTimeFrame == y.NextTimeFrame) return x.ID - y.ID;
-                return x.NextTimeFrame - y.NextTimeFrame;
+                this.Source = source;
+                this.Enumerator = this.Source.AsTimePass().GetEnumerator();
+                if (!this.Enumerator.MoveNext()) throw new InvalidOperationException();
+            }
+
+            public class Comparer : IComparer<RunningObjectRecord>
+            {
+                public int Compare([AllowNull] RunningObjectRecord x, [AllowNull] RunningObjectRecord y)
+                {
+                    if (x.Enumerator.Current == y.Enumerator.Current)
+                    {
+                        return
+                            ((x.Source is World) ? (-1) : ((x.Source as Life).ID)) - 
+                            ((y.Source is World) ? (-1) : ((y.Source as Life).ID));
+                    }
+                    return x.Enumerator.Current - y.Enumerator.Current;
+                }
             }
         }
 
+
         private void RefreshFrame()
         {
-            foreach (var (x, y) in ForEachPos<Life.Sensibility>(this._maps_current_life_sense))
+            foreach (var (x, y) in ArrayHelper.ForEachPos<Life.Sensibility>(this._maps_current_life_sense))
             {
                 this._maps_snapshot[x, y] = this._maps_current_life_sense[x, y].TakeSnapshot();
             }
@@ -177,16 +175,5 @@ namespace GameHost1
             return this._maps_snapshot[x, y];
         }
 
-        // utility, 簡化到處都出現的雙層迴圈。只會循序取出 2D 陣列中所有的 (x, y) 座標組合
-        public static IEnumerable<(int x, int y)> ForEachPos<T>(T[,] array)
-        {
-            for (int y = 0; y < array.GetLength(1); y++)
-            {
-                for (int x = 0; x < array.GetLength(0); x++)
-                {
-                    yield return (x, y);
-                }
-            }
-        }
     }
 }

@@ -227,7 +227,7 @@ namespace GameHost1.Tests
             int[,] frames = new int[width, depth];
             int[,] start_frames = new int[width, depth];
             int frame = 10;
-            foreach(var (x, y) in World.ForEachPos<bool>(input_matrix))
+            foreach(var (x, y) in ArrayHelper.ForEachPos<bool>(input_matrix))
             {
                 frames[x, y] = frame;
             }
@@ -243,40 +243,9 @@ namespace GameHost1.Tests
                 CompareMatrix(expected_matrix, lifes.matrix);
             }
             return true;
-
-            //bool[,] actual_matrix = GameHost1.Program.GetNextGenMatrix(input_matrix);
-
-            //try
-            //{
-            //    CompareMatrix(expected_matrix, actual_matrix);
-            //}
-            //catch
-            //{
-            //    return false;
-            //}
-
-            //return true;
         }
 
 
-
-        //private void CompareMatrix(bool[,] source, bool[,] target)
-        //{
-        //    if (source == null) throw new ArgumentNullException();
-        //    if (target == null) throw new ArgumentNullException();
-        //    if (source.GetLength(0) != target.GetLength(0)) throw new ArgumentOutOfRangeException();
-        //    if (source.GetLength(1) != target.GetLength(1)) throw new ArgumentOutOfRangeException();
-
-        //    for (int y = 0; y < source.GetLength(1); y++)
-        //    {
-        //        for (int x = 0; x < source.GetLength(0); x++)
-        //        {
-        //            if (source[x, y] != target[x, y]) throw new ArgumentException();
-        //        }
-        //    }
-
-        //    return;
-        //}
         private void CompareMatrix(bool[,] source, ILife[,] target)
         {
             if (source == null) throw new ArgumentNullException();
