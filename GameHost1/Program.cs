@@ -6,27 +6,13 @@ using System.Threading;
 
 namespace GameHost1
 {
-    public interface IWorld
-    {
-        public bool Init(bool[,] init_matrix, int[,] init_cell_frame, int[,] init_cell_start_frame, int world_frame);
-
-        public IEnumerable<(TimeSpan time, ILife[,] matrix)> Running(TimeSpan until);
-    }
-
-    public interface ILife
-    {
-        public bool IsAlive { get; }
-    }
 
 
     public class Program
     {
         public static IWorld CreateWorld(int width, int depth)
         {
-            //
-            //  ToDo: fill your code HERE.
-            //
-            throw new NotImplementedException();
+            return new World(width, depth);
         }
 
         private static void Init(bool[,] matrix, int[,] frames, int cell_frame = 10, int rate = 20)
@@ -51,7 +37,7 @@ namespace GameHost1
             Init(matrix, frames, 100, 20);
 
             world.Init(matrix, frames, start_frames, 100);
-            
+
             #endregion
 
 
@@ -62,7 +48,7 @@ namespace GameHost1
             Stopwatch timer = new Stopwatch();
 
             timer.Restart();
-            foreach(var frame in world.Running(until))
+            foreach (var frame in world.Running(until))
             {
                 count++;
                 int live_count = 0;
@@ -94,7 +80,7 @@ namespace GameHost1
         #region utility method(s)...
         public static IEnumerable<(int x, int y)> ForEachPos<T>(T[,] input)
         {
-            for(int y = 0; y < input.GetLength(1); y++)
+            for (int y = 0; y < input.GetLength(1); y++)
             {
                 for (int x = 0; x < input.GetLength(0); x++)
                 {
