@@ -1,25 +1,31 @@
 ﻿using System;
+using System.Threading;
 
 namespace GameHost1
 {
-    public class Cell
+    public class Cell : ILife
     {
-        public bool Status { get; set; }
+        public bool IsAlive { get; set; }
 
         public Cell[,] Partners { get; set; }
 
         public Alarm Alarm { get; set; }
 
-        public Cell() 
+        private int StartTime { get; set; }
+
+        public Cell() {}
+
+        public Cell(bool isAlive, int interval, int startTime)
         {
-            Alarm = new Alarm(Evolve);
+            IsAlive = isAlive;
+            Alarm = new Alarm(interval, Evolve);
+            StartTime = startTime;
         }
 
-        public Cell(int rate)
+        public void AwakeAfterSleep() 
         {
-            Random rnd = new Random();
-            Status = (rnd.Next(100) < rate);
-            Alarm = new Alarm(Evolve);
+            Thread.Sleep(this.StartTime);
+            this.Alarm.Start();
         }
 
         /// <summary>
@@ -31,16 +37,16 @@ namespace GameHost1
         /// 6. 可以把最初的細胞結構定義為種子，當所有在種子中的細胞同時被以上規則處理後，可以得到第一代細胞圖。按規則繼續處理當前的細胞圖，可以得到下一代的細胞圖，周而復始。 
         /// </summary>
         /// <returns></returns>
-        public bool IsAlive()
+        private bool CheckIsAlive()
         {
-            var isAlive = this.Status;
+            var isAlive = this.IsAlive;
             int aliveCount = 0;
 
             for (int i = 0; i < Partners.GetLength(0); i++)
                 for (int k = 0; k < Partners.GetLength(1); k++)
-                    if (Partners[i, k].Status) aliveCount++;
+                    if (Partners[i, k].IsAlive) aliveCount++;
 
-            if (this.Status)
+            if (this.IsAlive)
             {
                 aliveCount--;
                 if (aliveCount < 2 || aliveCount > 3)
@@ -57,7 +63,7 @@ namespace GameHost1
         public void Evolve() 
         {
             if (Partners != null)
-                this.Status = IsAlive();
+                this.IsAlive = CheckIsAlive();
         }
     }
 }

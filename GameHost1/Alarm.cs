@@ -8,10 +8,10 @@ namespace GameHost1
         public Timer Timer { get; set; }
         public Action Action { get; set; }
 
-        public Alarm(Action action) 
+        public Alarm(int interval, Action action) 
         {
             this.Action = action;
-            this.Timer = new Timer(200);
+            this.Timer = new Timer(interval);
             this.Timer.Elapsed += OnTimedEvent;
             this.Timer.AutoReset = true;
             this.Timer.Enabled = true;

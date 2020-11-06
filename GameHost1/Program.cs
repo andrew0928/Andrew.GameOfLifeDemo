@@ -23,10 +23,7 @@ namespace GameHost1
     {
         public static IWorld CreateWorld(int width, int depth)
         {
-            //
-            //  ToDo: fill your code HERE.
-            //
-            throw new NotImplementedException();
+            return new Map(width, depth);
         }
 
         private static void Init(bool[,] matrix, int[,] frames, int cell_frame = 10, int rate = 20)
@@ -50,7 +47,7 @@ namespace GameHost1
             int[,] start_frames = new int[50, 20];
             Init(matrix, frames, 100, 20);
 
-            world.Init(matrix, frames, start_frames, 100);
+            world.Init(matrix, frames, start_frames, 200);
             
             #endregion
 
