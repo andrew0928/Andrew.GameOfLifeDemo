@@ -12,7 +12,7 @@ namespace GameHost1
 
         public Cell() 
         {
-
+            Alarm = new Alarm(Evolve);
         }
 
         public Cell(int rate)
@@ -20,7 +20,6 @@ namespace GameHost1
             Random rnd = new Random();
             Status = (rnd.Next(100) < rate);
             Alarm = new Alarm(Evolve);
-            Alarm.Start();
         }
 
         /// <summary>

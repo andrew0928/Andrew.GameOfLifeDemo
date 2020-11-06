@@ -63,6 +63,7 @@
                         }
                     }
                     Matrix[x, y].Partners = partners;
+                    Matrix[x, y].Alarm.Start();
                 }
             }
         }
@@ -81,7 +82,7 @@
             return next;
         }
 
-        public Map Clone() 
+        private Map Clone() 
         {
             return new Map(this.Matrix);
         }
