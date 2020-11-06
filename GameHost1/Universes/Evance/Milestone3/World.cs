@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace GameHost1.Universes.Evance
+namespace GameHost1.Universes.Evance.Milestone3
 {
     public class World : IWorld
     {
@@ -22,7 +22,10 @@ namespace GameHost1.Universes.Evance
 
         private Life[,] _lives;
 
-        public Life[,] LastFrameLives { get; private set; }
+        /// <summary>
+        /// 上一個週期所有 Lives 的外觀，僅能查看 preperties 。
+        /// </summary>
+        public LifeWithAppearanceOnly[,] LastFrameLives { get; private set; }
 
         public readonly (int width, int depth) Dimation;
 
@@ -31,7 +34,7 @@ namespace GameHost1.Universes.Evance
             this.Dimation = (width, depth);
 
             _lives = new Life[this.Dimation.width, this.Dimation.depth];
-            LastFrameLives = new Life[this.Dimation.width, this.Dimation.depth];
+            LastFrameLives = new LifeWithAppearanceOnly[this.Dimation.width, this.Dimation.depth];
         }
 
         public bool Init(bool[,] init_matrix, int[,] init_cell_frame, int[,] init_cell_start_frame, int world_frame)
@@ -44,21 +47,21 @@ namespace GameHost1.Universes.Evance
 
             // TODO: 檢查參數
 
-            // 初始化所有的生命
-            foreach (var p in World.ForEachPos(init_matrix))
-            {
-                var life = new Life();
-                life.Init(init_matrix[p.x, p.y], init_cell_frame[p.x, p.y], init_cell_start_frame[p.x, p.y]);
+            //// 初始化所有的生命
+            //foreach (var p in World.ForEachPos(init_matrix))
+            //{
+            //    var life = new Life();
+            //    life.Init(init_matrix[p.x, p.y], init_cell_frame[p.x, p.y], init_cell_start_frame[p.x, p.y]);
 
-                // TODO: 檢查 life.Init 是否成功
+            //    // TODO: 檢查 life.Init 是否成功
 
-                _lives[p.x, p.y] = life;
+            //    _lives[p.x, p.y] = life;
 
-                // 建立第一份生命快照
-                LastFrameLives[p.x, p.y] = Life.GetAppearanceOnlyLife(life);
-            }
+            //    // 建立第一份生命快照
+            //    LastFrameLives[p.x, p.y] = life.ConvertToAppearanceOnlyLife();
+            //}
 
-            _intervalFrame = world_frame;
+            //_intervalFrame = world_frame;
 
             _alreadyInitialize = true;
 
@@ -90,10 +93,11 @@ namespace GameHost1.Universes.Evance
                 _currentTime.Add(TimeSpan.FromMilliseconds(_intervalFrame));
 
 
+
+
+
+                yield return (_currentTime, LastFrameLives);
             } while (until > _currentTime);
-
-
-            throw new NotImplementedException();
         }
 
 

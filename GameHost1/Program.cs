@@ -23,14 +23,14 @@ namespace GameHost1
     {
         public static IWorld CreateWorld(int width, int depth)
         {
-            var world= new World(width, depth);
+            var world = new Universes.Evance.Milestone3.Universe(width, depth);
 
             #region Init the world...
 
             bool[,] matrix = new bool[width, depth];
             int[,] frames = new int[width, depth];
             int[,] start_frames = new int[width, depth];
-            Init(matrix, frames, 100, 20);
+            Init(matrix, frames, start_frames, 100, 20);
 
             world.Init(matrix, frames, start_frames, 100);
 
@@ -38,13 +38,14 @@ namespace GameHost1
 
             return world;
         }
-        private static void Init(bool[,] matrix, int[,] frames, int cell_frame = 10, int rate = 20)
+        private static void Init(bool[,] matrix, int[,] frames, int[,] start_frames, int cell_frame = 10, int start_frame = 5, int rate = 20)
         {
             Random rnd = new Random();
             foreach (var (x, y) in World.ForEachPos<bool>(matrix))
             {
                 matrix[x, y] = (rnd.Next(100) < rate);
                 frames[x, y] = cell_frame;
+                start_frames[x, y] = start_frame;
             }
         }
 
@@ -60,7 +61,7 @@ namespace GameHost1
             //Init(matrix, frames, 100, 20);
 
             //world.Init(matrix, frames, start_frames, 100);
-            
+
             //#endregion
 
 
@@ -71,7 +72,7 @@ namespace GameHost1
             Stopwatch timer = new Stopwatch();
 
             timer.Restart();
-            foreach(var frame in world.Running(until))
+            foreach (var frame in world.Running(until))
             {
                 count++;
                 int live_count = 0;
