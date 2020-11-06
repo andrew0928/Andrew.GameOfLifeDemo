@@ -100,8 +100,7 @@ namespace GameHost1.Universes.Evance.Milestone3
 
                     this.ElapseOnce();
 
-                    Thread.Sleep(_timeSettings.PlanckTimeInMillisecond);
-
+                    Thread.Sleep(_timeSettings.Interval);
                 } while (_timeSettings.SekaiSaigoNoHi > this.CurrentTime);
             },
             _cancellationTokenSource.Token);

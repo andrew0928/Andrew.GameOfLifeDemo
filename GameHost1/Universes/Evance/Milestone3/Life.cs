@@ -1,102 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace GameHost1.Universes.Evance.Milestone3
 {
-    //public class Milestone3Life : ILife
-    //{
-    //    private bool _areadyInit = false;
-    //    private bool _isAlive = false;
-    //    private bool _appearanceOnly = false;
-    //    private int _generation = 0;
-    //    private int _intervalFrame;
-    //    private int _startAfterFrame;
-    //    /// <summary>
-    //    /// 還差多少 msec 就可以進化
-    //    /// </summary>
-    //    private int _leftTimeForEvolving;
-
-    //    public bool IsAlive => _isAlive;
-
-    //    public bool AppearanceOnly => _appearanceOnly;
-
-    //    public int Generation => _generation;
-
-    //    public Milestone3Life()
-    //    {
-    //    }
-
-    //    /// <summary>
-    //    /// 建構花瓶 Life ，只能訪問 properties 。
-    //    /// </summary>
-    //    /// <param name="isAlive"></param>
-    //    public Milestone3Life(bool isAlive, int generation)
-    //    {
-    //        _appearanceOnly = true;
-    //        _isAlive = isAlive;
-    //        _generation = generation;
-    //    }
-
-    //    public bool Init(bool isAlive, int intervalFrame, int startAfterFrame)
-    //    {
-    //        if (_areadyInit || _appearanceOnly)
-    //        {
-    //            return false;
-    //        }
-
-    //        _areadyInit = true;
-
-    //        _isAlive = isAlive;
-    //        _intervalFrame = intervalFrame;
-    //        _startAfterFrame = startAfterFrame;
-
-    //        _leftTimeForEvolving = _startAfterFrame;
-
-    //        return true;
-    //    }
-
-
-    //    public bool IsGoingOnToEvolve(TimeSpan time)
-    //    {
-    //        return time.TotalMilliseconds >= _leftTimeForEvolving;
-    //    }
-
-    //    public void TimePass()
-    //    {
-    //        // 環境一次週期期間， life 刷新一次跟多次是相同意義
-
-
-
-    //    }
-
-    //    public void Evolve()
-    //    {
-
-    //    }
-
-
-    //    public LifeWithAppearanceOnly ConvertToAppearanceOnlyLife()
-    //    {
-    //        return new LifeWithAppearanceOnly(this);
-    //    }
-
-    //    /// <summary>
-    //    /// 取得花瓶 Life 。
-    //    /// </summary>
-    //    /// <param name="life"></param>
-    //    /// <returns></returns>
-    //    public static LifeWithAppearanceOnly GetAppearanceOnlyLife(Life life)
-    //    {
-    //        return new LifeWithAppearanceOnly(life);
-    //    }
-    //}
-
     public class Life : ILife, IDisposable
     {
         private readonly ITimeReadOnly _time;
         private readonly IPlanetReadOnly _planet;
         private readonly LifeSettings _lifeSettings;
+        private readonly SemaphoreSlim _evolvedSignal;
+
         /// <summary>
         /// 下一次有效進化時間 (在同一個時間區間內，進化一次跟進化多次的意義相同)
         /// </summary>
@@ -131,7 +45,25 @@ namespace GameHost1.Universes.Evance.Milestone3
 
             _intervalTimespan = TimeSpan.FromMilliseconds(_lifeSettings.TimeSettings.Interval);
 
+            _evolvedSignal = _lifeSettings.EvolvedSignal;
+
             _time.Elapsing += (sender, eventArgs) => this.TryEvolve(sender, eventArgs);
+
+            //_time.Elapsing += async (sender, eventArgs) =>
+            //{
+            //    await _evolvedSignal.WaitAsync();
+
+            //    //this.TryEvolve(sender, eventArgs);
+
+            //    //var task = Task.Run(() => this.TryEvolve(sender, eventArgs));
+            //    //task.Wait();
+
+            //    //await Task.Run(() => this.TryEvolve(sender, eventArgs));
+
+            //    _evolvedSignal.Release();
+            //};
+
+
         }
 
         private void CheckSettings()
@@ -184,7 +116,7 @@ namespace GameHost1.Universes.Evance.Milestone3
                 do
                 {
                     this._leftTimeForEvolving = this._leftTimeForEvolving.Add(_intervalTimespan);
-                } while (this._leftTimeForEvolving >= timeEventArgs.NextTime);
+                } while (timeEventArgs.NextTime > this._leftTimeForEvolving);
 
                 return true;
             }
