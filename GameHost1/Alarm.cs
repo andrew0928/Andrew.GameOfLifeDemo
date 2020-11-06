@@ -11,14 +11,12 @@ namespace GameHost1
         public Alarm(Action action) 
         {
             this.Action = action;
-
-            Random rnd = new Random();
-            var temp = rnd.Next(100) + 100;
-
-            this.Timer = new Timer(10);
+            this.Timer = new Timer(200);
             this.Timer.Elapsed += OnTimedEvent;
             this.Timer.AutoReset = true;
             this.Timer.Enabled = true;
+
+            this.Stop();
         }
         public void Start() 
         {

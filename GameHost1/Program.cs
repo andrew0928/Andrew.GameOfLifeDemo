@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading;
 
 namespace GameHost1
@@ -19,7 +20,7 @@ namespace GameHost1
             {
                 int liveCount = 0;
 
-                Thread.Sleep(500);
+                Thread.Sleep(200);
                 Console.SetCursorPosition(0, 0);
 
                 for (int y = 0; y < map.Height; y++)
@@ -36,6 +37,7 @@ namespace GameHost1
                 map = map.GetNextGeneration();
 
                 Console.WriteLine($"total lives: {liveCount}, round: {count} / 5000...");
+                Console.WriteLine($"thread count: {Process.GetCurrentProcess().Threads.Count}");
             }
         }
     }
