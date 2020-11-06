@@ -1,7 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace GameHost1.Tests
 {
@@ -249,12 +247,12 @@ namespace GameHost1.Tests
         {
             if (source == null) throw new ArgumentNullException();
             if (target == null) throw new ArgumentNullException();
-            if (source.GetLength(0) != target.GetLength(0)) throw new ArgumentOutOfRangeException();
-            if (source.GetLength(1) != target.GetLength(1)) throw new ArgumentOutOfRangeException();
+            if (source.Width != target.Width) throw new ArgumentOutOfRangeException();
+            if (source.Height != target.Height) throw new ArgumentOutOfRangeException();
 
-            for (int y = 0; y < source.GetLength(1); y++)
+            for (int y = 0; y < source.Height; y++)
             {
-                for (int x = 0; x < source.GetLength(0); x++)
+                for (int x = 0; x < source.Width; x++)
                 {
                     if (source[x, y] != target[x, y].IsAlive) throw new ArgumentException();
                 }
@@ -263,9 +261,9 @@ namespace GameHost1.Tests
             return;
         }
 
-        private bool[,] _Transform(string[] map)
+        private Cell[,] _Transform(string[] map)
         {
-            bool[,] matrix = new bool[map[0].Length, map.Length];
+            Cell[,] matrix = new Cell[map[0].Length, map.Length];
 
             int x = 0;
             int y = 0;
@@ -273,7 +271,10 @@ namespace GameHost1.Tests
             {
                 foreach (var c in line)
                 {
-                    matrix[x, y] = (c == '1');
+                    matrix[x, y] = new Cell
+                    {
+                        Status = (c == '1')
+                    };
                     x++;
                 }
                 x = 0;
