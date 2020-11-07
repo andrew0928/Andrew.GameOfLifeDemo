@@ -13,10 +13,11 @@ namespace GameHost1
 
 
         private static void RunGameOfLife()
-        { 
+        {
             bool[,] matrix = new bool[50, 20];
-
             Init(matrix, 20);
+
+            var world = new World(matrix, out var god);
             for (int count = 0; count < 5000; count++)
             {
                 int live_count = 0;
@@ -24,10 +25,10 @@ namespace GameHost1
                 Thread.Sleep(200);
                 Console.SetCursorPosition(0, 0);
 
-                //foreach (var (x, y) in World.ForEachPos<bool>(matrix))
-                for(int y = 0; y < matrix.GetLength(1); y++)
+                foreach (var (x, y) in World.ForEachPos<bool>(matrix))
+                //for(int y = 0; y < matrix.GetLength(1); y++)
                 {
-                    for (int x = 0; x < matrix.GetLength(0); x++)
+                    //for (int x = 0; x < matrix.GetLength(0); x++)
                     {
                         var c = matrix[x, y];
                         live_count += (c ? 1 : 0);
@@ -36,7 +37,9 @@ namespace GameHost1
                     Console.WriteLine();
                 }
 
-                matrix = GetNextGenMatrix(matrix);
+                god.TimePass();
+                matrix = god.SeeWholeWorld();
+                //matrix = GetNextGenMatrix(matrix);
                 Console.WriteLine($"total lives: {live_count}, round: {count} / 5000...");
             }
         }
