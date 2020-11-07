@@ -234,7 +234,7 @@ namespace GameHost1.Tests
             world.Init(input_matrix, frames, start_frames, 10);
 
             int count = 0;
-            foreach(var lifes in world.Running(TimeSpan.MaxValue))
+            foreach(var lifes in world.Running(TimeSpan.MaxValue, false))
             {
                 if (count >= expected_results.GetLength(0)) break;
                 bool[,] expected_matrix = _Transform(expected_results[count++]);
