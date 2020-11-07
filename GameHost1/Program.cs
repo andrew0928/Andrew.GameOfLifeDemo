@@ -15,7 +15,7 @@ namespace GameHost1
         /// </summary>
         /// <param name="area">must be bool[3, 3]</param>
         /// <returns></returns>
-        static bool TimePassRule(bool[,] area)
+        public static bool TimePassRule(bool[,] area)
         {
             // TODO: fill your code here
 
@@ -113,74 +113,5 @@ namespace GameHost1
         }
 
 
-
-
-
-
-
-
-        private static void RunUnitTest(string pattern_name, int repeat_count, List<string[]> testcase)
-        {
-            Console.Write($"測試案例: {pattern_name} ...");
-
-            try
-            {
-                bool[,] input_matrix = _Transform(testcase[0]);
-                for (int i = 1; i < testcase.Count * repeat_count; i++)
-                {
-                    bool[,] expected_matrix = _Transform(testcase[i % testcase.Count]);
-                    bool[,] actual_matrix = GetNextGenMatrix(input_matrix);
-
-                    // compare
-                    CompareMatrix(expected_matrix, actual_matrix);
-                    input_matrix = actual_matrix;
-                }
-            }
-            catch
-            {
-                Console.WriteLine(" FAILED.");
-                return;
-            }
-
-            Console.WriteLine(" PASSED.");
-        }
-
-        private static void CompareMatrix(bool[,] source, bool[,] target)
-        {
-            if (source == null) throw new ArgumentNullException();
-            if (target == null) throw new ArgumentNullException();
-            if (source.GetLength(0) != target.GetLength(0)) throw new ArgumentOutOfRangeException();
-            if (source.GetLength(1) != target.GetLength(1)) throw new ArgumentOutOfRangeException();
-
-            for (int y = 0; y < source.GetLength(1); y++)
-            {
-                for (int x = 0; x < source.GetLength(0); x++)
-                {
-                    if (source[x, y] != target[x, y]) throw new ArgumentException();
-                }
-            }
-
-            return;
-        }
-
-        private static bool[,] _Transform(string[] map)
-        {
-            bool[,] matrix = new bool[map[0].Length, map.Length];
-
-            int x = 0;
-            int y = 0;
-            foreach(var line in map)
-            {
-                foreach(var c in line)
-                {
-                    matrix[x, y] = (c == '1');
-                    x++;
-                }
-                x = 0;
-                y++;
-            }
-
-            return matrix;
-        }
     }
 }
