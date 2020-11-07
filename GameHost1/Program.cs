@@ -42,7 +42,7 @@ namespace GameHost1
 
 
             int count = 0;
-            bool realtime = false;
+            bool realtime = true;
             bool display = true;
 
             TimeSpan until = TimeSpan.FromMinutes(10);
@@ -74,7 +74,7 @@ namespace GameHost1
                 }
 
                 //if (time > timer.Elapsed) Thread.Sleep(time - timer.Elapsed);
-                Console.WriteLine($"total lives: {live_count}, time frame: {time} / {until}, speed up: {time.TotalMilliseconds / realtime_timer.ElapsedMilliseconds}X");
+                Console.WriteLine($"total lives: {live_count}, time frame: {time} / {until}, speed up: {time.TotalMilliseconds / realtime_timer.ElapsedMilliseconds:0.##}X                 ");
             }
         }
     }
