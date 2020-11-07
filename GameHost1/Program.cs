@@ -10,6 +10,11 @@ namespace GameHost1
             RunGameOfLife();
         }
 
+
+
+
+        private static bool[] _lookup_alive = new bool[] { false, false, true,  true, false, false, false, false, false };
+        private static bool[] _lookup_dead  = new bool[] { false, false, false, true, false, false, false, false, false };
         /// <summary>
         /// 
         /// </summary>
@@ -30,12 +35,21 @@ namespace GameHost1
             foreach (bool x in area) { if (x) { live_count++; } }
             if (current) live_count -= 1;
 
-            if (current && live_count < 2) return false;
-            if (current && (live_count == 2 || live_count == 3)) return true;
-            if (current && live_count > 3) return false;
-            if (!current && live_count == 3) return true;
+            //if (current && live_count < 2) return false;
+            //if (current && (live_count == 2 || live_count == 3)) return true;
+            //if (current && live_count > 3) return false;
+            //if (!current && live_count == 3) return true;
 
-            return false;
+            if (current)
+            {
+                return _lookup_alive[live_count];
+            }
+            else
+            {
+                return _lookup_dead[live_count];
+            }
+
+            //return false;
         }
 
 
