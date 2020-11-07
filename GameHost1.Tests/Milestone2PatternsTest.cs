@@ -236,7 +236,7 @@ namespace GameHost1.Tests
             int count = 0;
             foreach(var lifes in world.Running(TimeSpan.MaxValue))
             {
-                if (count > expected_results.GetLength(0)) break;
+                if (count >= expected_results.GetLength(0)) break;
                 bool[,] expected_matrix = _Transform(expected_results[count++]);
                 
                 CompareMatrix(expected_matrix, lifes.matrix);
