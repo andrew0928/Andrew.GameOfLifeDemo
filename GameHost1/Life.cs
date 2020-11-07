@@ -5,7 +5,23 @@ using System.Threading;
 
 namespace GameHost1
 {
+    public class LifeSnapshot : ILife
+    {
+        public LifeSnapshot(bool alive)
+        {
+            this._alive = alive;
+        }
 
+        private bool _alive;
+
+        bool ILife.IsAlive
+        {
+            get
+            {
+                return this._alive;
+            }
+        }
+    }
 
     public class Life : ILife, IRunningObject
     {
@@ -16,24 +32,12 @@ namespace GameHost1
         private readonly Sensibility _sensibility;
         private static int _newid_seed = 0;
 
-        public readonly int ID;
+        public int ID { get; private set; }
         public readonly int Frame;
        
         public bool IsAlive { get; private set; }
 
         private int _time_passed = 0;
-        private int _generation = 0;
-
-        // for snapshot use only
-        private Life(Life item)
-        {
-            this.ID = item.ID;
-            this._sensibility = null;
-            this.IsAlive = item.IsAlive;
-            this.Frame = 0;
-
-            this._time_passed = 0;
-        }
 
         public Life(out Sensibility sensibility, bool alive, int frame, int start_frames = 0)
         {
@@ -45,6 +49,14 @@ namespace GameHost1
             this._time_passed = start_frames;
         }
 
+        int IRunningObject.Age
+        {
+            get
+            {
+                return this._time_passed;
+            }
+        }
+
 
         IEnumerable<int> IRunningObject.AsTimePass()
         {
@@ -53,7 +65,7 @@ namespace GameHost1
                 if (this._sensibility == null) throw new InvalidOperationException("can not do this if this life is clone");
 
                 int around_lifes_count = 0;
-                foreach (Life l in this._sensibility.SeeAround()) if (l != null && l.IsAlive) around_lifes_count++;
+                foreach (ILife l in this._sensibility.SeeAround()) if (l != null && l.IsAlive) around_lifes_count++;
 
                 bool result = false;
                 if (this.IsAlive)
@@ -67,7 +79,6 @@ namespace GameHost1
 
                 this.IsAlive = result;
                 this._time_passed += this.Frame;
-                this._generation++;
 
                 yield return this._time_passed;
             }
@@ -75,13 +86,10 @@ namespace GameHost1
 
         public class Sensibility
         {
-            //private World _reality;
             private ILifeVision _vision;
 
             public readonly Life Itself;
             private (int x, int y) _position;
-
-            //private Func<Life[,]> _visibility = (() => { throw new InvalidOperationException("not initialized."); });
 
             public Sensibility(Life itself)
             {
@@ -92,20 +100,21 @@ namespace GameHost1
             {
                 this._vision = reality;
                 this._position = position;
-                //this._visibility = visibility;
             }
 
-            public Life[,] SeeAround()
+            public ILife[,] SeeAround()
             {
                 if (this._vision == null) throw new InvalidOperationException("world not initialized.");
-                //return this._visibility();
                 return this._vision.SeeAround(this._position.x, this._position.y);
             }
 
-            public Life TakeSnapshot()
-            {
-                return new Life(this.Itself);
-            }
+            //public ILife TakeSnapshot()
+            //{
+            //    return new LifeSnapshot()
+            //    {
+            //        Alive = this.Itself.IsAlive
+            //    };
+            //}
         }
     }
 

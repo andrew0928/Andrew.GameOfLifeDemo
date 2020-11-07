@@ -13,7 +13,7 @@ namespace GameHost1
     /// </summary>
     public interface ILifeVision
     {
-        public Life[,] SeeAround(int x, int y);
+        public ILife[,] SeeAround(int x, int y);
     }
 
     /// <summary>
@@ -24,7 +24,9 @@ namespace GameHost1
     /// </summary>
     public interface IRunningObject
     {
+        public int ID { get; }
         public IEnumerable<int> AsTimePass();
+        public int Age { get; }
     }
 
 
@@ -37,16 +39,14 @@ namespace GameHost1
         private int _time_passed = 0;
 
         // 上一個 frame 的地圖快照。所有 life / god 的視覺都會觀察到這個 frame 的景物
-        private Life[,] _maps_snapshot;
-
-        private Dictionary<Life, (int x, int y)> _links = new Dictionary<Life, (int x, int y)>();
+        private ILife[,] _maps_snapshot;
 
 
         public World(int width, int depth)
         {
             this.Dimation = (width, depth);
             this._maps_current_life_sense = new Life.Sensibility[this.Dimation.width, this.Dimation.depth];
-            this._maps_snapshot = new Life[this.Dimation.width, this.Dimation.depth];
+            this._maps_snapshot = new ILife[this.Dimation.width, this.Dimation.depth];
         }
 
 
@@ -68,10 +68,6 @@ namespace GameHost1
                 }
 
                 var cell = new Life(out var sense, init_matrix[x, y], init_cell_frame[x, y]);
-                //sense.InitWorldSide(this, (x, y), () =>
-                //{
-                //    return this.SeeAround((x, y));
-                //});
                 sense.InitWorldSide(this, (x, y));
                 this._maps_current_life_sense[x, y] = sense;
 
@@ -81,6 +77,19 @@ namespace GameHost1
             return true;
         }
 
+
+        int IRunningObject.Age
+        {
+            get
+            {
+                return this._time_passed;
+            }
+        }
+
+        int IRunningObject.ID
+        {
+            get { return -1; }
+        }
 
         IEnumerable<int> IRunningObject.AsTimePass()
         {
@@ -99,28 +108,32 @@ namespace GameHost1
             this.RefreshFrame();
             int until_frames = (int)Math.Min(int.MaxValue, until.TotalMilliseconds);
 
-            SortedSet<RunningObjectRecord> todoset = new SortedSet<RunningObjectRecord>(new RunningObjectRecord.Comparer());
+            //SortedSet<RunningObjectRecord> todoset = new SortedSet<RunningObjectRecord>();
+            PriorityQueue<RunningObjectRecord> pqlist = new PriorityQueue<RunningObjectRecord>();
 
-            foreach(var (x, y) in ArrayHelper.ForEachPos<Life.Sensibility>(this._maps_current_life_sense))
+            foreach (var (x, y) in ArrayHelper.ForEachPos<Life.Sensibility>(this._maps_current_life_sense))
             {
                 var sense = this._maps_current_life_sense[x, y];
-                todoset.Add(new RunningObjectRecord(sense.Itself));
+                //todoset.Add(new RunningObjectRecord(sense.Itself));
+                pqlist.Enqueue(new RunningObjectRecord(sense.Itself));
             }
-            todoset.Add(new RunningObjectRecord(this));
+            //todoset.Add(new RunningObjectRecord(this));
+            pqlist.Enqueue(new RunningObjectRecord(this));
 
 
             // world start
             Stopwatch timer = new Stopwatch();
-            timer.Restart();
             do
             {
-                var item = todoset.First();
+                //var item = todoset.Min;
+                //todoset.Remove(item);
 
-                todoset.Remove(item);
+                var item = pqlist.Dequeue();
 
                 if (item.Enumerator.MoveNext())
                 {
-                    todoset.Add(item);
+                    //todoset.Add(item);
+                    pqlist.Enqueue(item);
                     if (realtime) SpinWait.SpinUntil(() => { return timer.ElapsedMilliseconds >= item.Enumerator.Current; });
                 }
                 else
@@ -142,19 +155,15 @@ namespace GameHost1
         {
             foreach (var (x, y) in ArrayHelper.ForEachPos<Life.Sensibility>(this._maps_current_life_sense))
             {
-                this._maps_snapshot[x, y] = this._maps_current_life_sense[x, y].TakeSnapshot();
+                //this._maps_snapshot[x, y] = this._maps_current_life_sense[x, y].TakeSnapshot();
+                this._maps_snapshot[x, y] = new LifeSnapshot(this._maps_current_life_sense[x, y].Itself.IsAlive);
             }
         }
 
-        Life[,] ILifeVision.SeeAround(int x, int y)
+        ILife[,] ILifeVision.SeeAround(int x, int y)
         {
             var pos = (x, y);
-        //    throw new NotImplementedException();
-        //}
-        //// only life itself can do this
-        //private Life[,] SeeAround((int x, int y) pos)
-        //{
-            Life[,] result = new Life[3, 3];
+            ILife[,] result = new ILife[3, 3];
 
             result[0, 0] = this.SeePosition(pos.x - 1, pos.y - 1);
             result[1, 0] = this.SeePosition(pos.x   ,  pos.y - 1);
@@ -171,22 +180,17 @@ namespace GameHost1
             return result;
         }
 
-        private Life SeePosition(int x, int y)
+        private ILife SeePosition(int x, int y)
         {
             if (x < 0) return null;
-            if (x >= this.Dimation.width) return null;
             if (y < 0) return null;
+            if (x >= this.Dimation.width) return null;
             if (y >= this.Dimation.depth) return null;
             return this._maps_snapshot[x, y];
         }
 
 
-
-
-
-
-
-        private class RunningObjectRecord
+        private class RunningObjectRecord : IComparable<RunningObjectRecord>
         {
             public IRunningObject Source { get; private set; }
 
@@ -199,18 +203,11 @@ namespace GameHost1
                 if (!this.Enumerator.MoveNext()) throw new InvalidOperationException();
             }
 
-            public class Comparer : IComparer<RunningObjectRecord>
+            int IComparable<RunningObjectRecord>.CompareTo(RunningObjectRecord other)
             {
-                public int Compare([AllowNull] RunningObjectRecord x, [AllowNull] RunningObjectRecord y)
-                {
-                    if (x.Enumerator.Current == y.Enumerator.Current)
-                    {
-                        return
-                            ((x.Source is World) ? (-1) : ((x.Source as Life).ID)) -
-                            ((y.Source is World) ? (-1) : ((y.Source as Life).ID));
-                    }
-                    return x.Enumerator.Current - y.Enumerator.Current;
-                }
+                int result = this.Source.Age - other.Source.Age;
+                if (result != 0) return result;
+                return this.Source.ID - other.Source.ID;
             }
         }
 

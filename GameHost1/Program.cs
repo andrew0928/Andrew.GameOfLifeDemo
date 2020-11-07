@@ -42,15 +42,15 @@ namespace GameHost1
 
 
             int count = 0;
-            bool realtime = true;
-            bool display = true;
+            bool realtime = false;
+            bool display = false;
 
             TimeSpan until = TimeSpan.FromMinutes(10);
             Stopwatch realtime_timer = new Stopwatch();
 
-            realtime_timer.Restart();
             Console.CursorVisible = false;
-            foreach(var frame in world.Running(until, realtime))
+            realtime_timer.Restart();
+            foreach (var frame in world.Running(until, realtime))
             {
                 count++;
                 int live_count = 0;
@@ -73,7 +73,8 @@ namespace GameHost1
                     }
                 }
 
-                //if (time > timer.Elapsed) Thread.Sleep(time - timer.Elapsed);
+                Console.Write("".PadRight(100, ' '));
+                Console.SetCursorPosition(0, Console.CursorTop);
                 Console.WriteLine($"total lives: {live_count}, time frame: {time} / {until}, speed up: {time.TotalMilliseconds / realtime_timer.ElapsedMilliseconds:0.##}X                 ");
             }
         }
