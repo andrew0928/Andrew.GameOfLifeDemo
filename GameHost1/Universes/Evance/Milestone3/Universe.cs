@@ -55,8 +55,9 @@ namespace GameHost1.Universes.Evance.Milestone3
         /// 
         /// </summary>
         /// <param name="until"></param>
+        /// <param name="realtime"></param>
         /// <returns></returns>
-        public IEnumerable<(TimeSpan time, ILife[,] matrix)> Running(TimeSpan until)
+        public IEnumerable<(TimeSpan time, ILife[,] matrix)> Running(TimeSpan until, bool realtime = false)
         {
             while (until > _time.CurrentTime)
             {
@@ -129,11 +130,6 @@ namespace GameHost1.Universes.Evance.Milestone3
             {
                 throw new ArgumentOutOfRangeException();
             }
-        }
-
-        public IEnumerable<(TimeSpan time, ILife[,] matrix)> Running(TimeSpan until, bool realtime = false)
-        {
-            throw new NotImplementedException();
         }
     }
 }
