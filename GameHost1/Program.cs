@@ -12,12 +12,8 @@ namespace GameHost1
     {
         public static IWorld CreateWorld(int width, int depth)
         {
-            //
-            //  ToDo: fill your code HERE.
-            //
-            throw new NotImplementedException();
+            return new Universes.Evance.Milestone3.Universe(width, depth);
         }
-
         private static void Init(bool[,] matrix, int[,] frames, int cell_frame = 10, int rate = 20)
         {
             Random rnd = new Random();
@@ -40,7 +36,7 @@ namespace GameHost1
             Init(matrix, frames, 100, 20);
 
             world.Init(matrix, frames, start_frames, 100);
-            
+
             #endregion
 
 
