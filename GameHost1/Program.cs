@@ -30,7 +30,7 @@ namespace GameHost1
             bool[,] matrix = new bool[width, depth];
             int[,] frames = new int[width, depth];
             int[,] start_frames = new int[width, depth];
-            Init(matrix, frames, start_frames, 100, 20);
+            Init(matrix, frames, 100, 20);
 
             world.Init(matrix, frames, start_frames, 100);
 
@@ -45,7 +45,6 @@ namespace GameHost1
             {
                 matrix[x, y] = (rnd.Next(100) < rate);
                 frames[x, y] = cell_frame;
-                start_frames[x, y] = start_frame;
             }
         }
 
@@ -104,7 +103,7 @@ namespace GameHost1
         #region utility method(s)...
         public static IEnumerable<(int x, int y)> ForEachPos<T>(T[,] input)
         {
-            for(int y = 0; y < input.GetLength(1); y++)
+            for (int y = 0; y < input.GetLength(1); y++)
             {
                 for (int x = 0; x < input.GetLength(0); x++)
                 {
