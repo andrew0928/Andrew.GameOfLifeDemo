@@ -6,17 +6,6 @@ using System.Threading;
 
 namespace GameHost1
 {
-    public interface IWorld
-    {
-        public bool Init(bool[,] init_matrix, int[,] init_cell_frame, int[,] init_cell_start_frame, int world_frame);
-
-        public IEnumerable<(TimeSpan time, ILife[,] matrix)> Running(TimeSpan until);
-    }
-
-    public interface ILife
-    {
-        public bool IsAlive { get; }
-    }
 
 
     public class Program
@@ -32,7 +21,7 @@ namespace GameHost1
         private static void Init(bool[,] matrix, int[,] frames, int cell_frame = 10, int rate = 20)
         {
             Random rnd = new Random();
-            foreach (var (x, y) in Program.ForEachPos<bool>(matrix))
+            foreach (var (x, y) in ArrayHelper.ForEachPos<bool>(matrix))
             {
                 matrix[x, y] = (rnd.Next(100) < rate);
                 frames[x, y] = cell_frame;
@@ -57,12 +46,15 @@ namespace GameHost1
 
 
             int count = 0;
+            bool realtime = false;
+            bool display = true;
 
             TimeSpan until = TimeSpan.FromMinutes(10);
-            Stopwatch timer = new Stopwatch();
+            Stopwatch realtime_timer = new Stopwatch();
 
-            timer.Restart();
-            foreach(var frame in world.Running(until))
+            realtime_timer.Restart();
+            Console.CursorVisible = false;
+            foreach(var frame in world.Running(until, realtime))
             {
                 count++;
                 int live_count = 0;
@@ -71,37 +63,22 @@ namespace GameHost1
                 var current_matrix = frame.matrix;
                 var time = frame.time;
 
-                for (int y = 0; y < current_matrix.GetLength(1); y++)
+                if (display)
                 {
-                    for (int x = 0; x < current_matrix.GetLength(0); x++)
+                    for (int y = 0; y < current_matrix.GetLength(1); y++)
                     {
-                        var c = current_matrix[x, y];
-                        if (c.IsAlive) live_count++;
-                        Console.Write(c.IsAlive ? '★' : '☆');
+                        for (int x = 0; x < current_matrix.GetLength(0); x++)
+                        {
+                            var c = current_matrix[x, y];
+                            if (c.IsAlive) live_count++;
+                            Console.Write(c.IsAlive ? '★' : '☆');
+                        }
+                        Console.WriteLine();
                     }
-                    Console.WriteLine();
                 }
-
-                if (time > timer.Elapsed) Thread.Sleep(time - timer.Elapsed);
-                Console.WriteLine($"total lives: {live_count}, time frame: {time} / {until}...");
+                Console.WriteLine($"total lives: {live_count}, time frame: {time} / {until}, speed up: {time.TotalMilliseconds / realtime_timer.ElapsedMilliseconds}X");
             }
         }
 
-
-
-
-
-        #region utility method(s)...
-        public static IEnumerable<(int x, int y)> ForEachPos<T>(T[,] input)
-        {
-            for(int y = 0; y < input.GetLength(1); y++)
-            {
-                for (int x = 0; x < input.GetLength(0); x++)
-                {
-                    yield return (x, y);
-                }
-            }
-        }
-        #endregion
     }
 }
