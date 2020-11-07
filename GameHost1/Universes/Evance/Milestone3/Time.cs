@@ -7,7 +7,6 @@ namespace GameHost1.Universes.Evance.Milestone3
     public class Time : ITime, IDisposable
     {
         private TimeSettings _timeSettings;
-        private readonly TimeSpan _intervalTimespan;
         private int _currentGeneration;
         private Task _elaspeTask;
         private volatile bool _elapseSignal = false;
@@ -22,6 +21,11 @@ namespace GameHost1.Universes.Evance.Milestone3
 
         public TimeSpan CurrentTime { get; private set; } = new TimeSpan();
 
+        /// <summary>
+        /// 每一週期的間隔時間 (msec)
+        /// </summary>
+        public TimeSpan Interval { get; }
+
         public Time() : this(new TimeSettings())
         {
         }
@@ -30,7 +34,7 @@ namespace GameHost1.Universes.Evance.Milestone3
         {
             _timeSettings = timeSettings;
 
-            _intervalTimespan = TimeSpan.FromMilliseconds(_timeSettings.Interval);
+            Interval = TimeSpan.FromMilliseconds(_timeSettings.Interval);
 
             this.AutoElapse();
         }
@@ -56,14 +60,14 @@ namespace GameHost1.Universes.Evance.Milestone3
             //var lastTime = this.CurrentTime;
             var lastTime = TimeSpan.FromTicks(this.CurrentTime.Ticks);
 
-            this.CurrentTime = this.CurrentTime.Add(_intervalTimespan);
+            this.CurrentTime = this.CurrentTime.Add(Interval);
 
             var timeEventArgs = new TimeEventArgs()
             {
                 CurrentGeneration = generation,
                 CurrentTime = this.CurrentTime,
                 LastTime = lastTime,
-                NextTime = this.CurrentTime.Add(_intervalTimespan),
+                NextTime = this.CurrentTime.Add(Interval),
             };
 
             OnReady(timeEventArgs);

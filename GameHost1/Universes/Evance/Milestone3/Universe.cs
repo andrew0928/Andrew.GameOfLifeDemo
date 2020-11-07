@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace GameHost1.Universes.Evance.Milestone3
 {
@@ -41,6 +42,7 @@ namespace GameHost1.Universes.Evance.Milestone3
             CheckInputMatrixDimation(init_matrix);
             CheckInputMatrixDimation(init_cell_frame);
             CheckInputMatrixDimation(init_cell_start_frame);
+            if (world_frame <= 0) throw new ArgumentOutOfRangeException(nameof(world_frame));
 
             #endregion
 
@@ -61,9 +63,19 @@ namespace GameHost1.Universes.Evance.Milestone3
         {
             while (until > _time.CurrentTime)
             {
+                var startTimeSpan = DateTime.Now;
+
                 _time.ElapseOnce();
 
                 _planet.RefreshLastFrameLives();
+
+                if (realtime)
+                {
+                    var diff = DateTime.Now.Subtract(startTimeSpan);
+                    var sleep = _time.Interval.Subtract(diff);
+                    Thread.Sleep(sleep);
+                    //Console.WriteLine($"sleep: {sleep}");
+                }
 
                 yield return (_time.CurrentTime, _planet.LastFrameLives);
             }
