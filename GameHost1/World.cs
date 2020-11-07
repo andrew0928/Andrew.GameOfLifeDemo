@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
+using System.Threading;
 
 namespace GameHost1
 {
@@ -90,12 +92,12 @@ namespace GameHost1
         }
 
 
-        public IEnumerable<(TimeSpan time, ILife[,] matrix)> Running(TimeSpan until)
+        public IEnumerable<(TimeSpan time, ILife[,] matrix)> Running(TimeSpan until, bool realtime = false)
         {
             if (!this._is_init) throw new InvalidOperationException();
 
             this.RefreshFrame();
-            int until_frames = (int)until.TotalMilliseconds;
+            int until_frames = (int)Math.Min(int.MaxValue, until.TotalMilliseconds);
 
             SortedSet<RunningObjectRecord> todoset = new SortedSet<RunningObjectRecord>(new RunningObjectRecord.Comparer());
 
@@ -106,6 +108,10 @@ namespace GameHost1
             }
             todoset.Add(new RunningObjectRecord(this));
 
+
+            // world start
+            Stopwatch timer = new Stopwatch();
+            timer.Restart();
             do
             {
                 var item = todoset.First();
@@ -115,6 +121,7 @@ namespace GameHost1
                 if (item.Enumerator.MoveNext())
                 {
                     todoset.Add(item);
+                    if (realtime) SpinWait.SpinUntil(() => { return timer.ElapsedMilliseconds >= item.Enumerator.Current; });
                 }
                 else
                 {
