@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace GameHost1.Universes.Evance.Milestone3
 {
@@ -9,7 +7,6 @@ namespace GameHost1.Universes.Evance.Milestone3
         private readonly ITimeReadOnly _time;
         private readonly IPlanetReadOnly _planet;
         private readonly LifeSettings _lifeSettings;
-        private readonly SemaphoreSlim _evolvedSignal;
 
         /// <summary>
         /// 下一次有效進化時間 (在同一個時間區間內，進化一次跟進化多次的意義相同)
@@ -45,35 +42,13 @@ namespace GameHost1.Universes.Evance.Milestone3
 
             _intervalTimespan = TimeSpan.FromMilliseconds(_lifeSettings.TimeSettings.Interval);
 
-            _evolvedSignal = _lifeSettings.EvolvedSignal;
-
             _time.Elapsing += (sender, eventArgs) => this.TryEvolve(sender, eventArgs);
-
-            //_time.Elapsing += async (sender, eventArgs) =>
-            //{
-            //    await _evolvedSignal.WaitAsync();
-
-            //    //this.TryEvolve(sender, eventArgs);
-
-            //    //var task = Task.Run(() => this.TryEvolve(sender, eventArgs));
-            //    //task.Wait();
-
-            //    //await Task.Run(() => this.TryEvolve(sender, eventArgs));
-
-            //    _evolvedSignal.Release();
-            //};
-
-
         }
 
         private void CheckSettings()
         {
-            // TODO
-
-            //if (_lifeSettings.EvolutionInterval < 0)
-            //{
-            //    throw new ArgumentOutOfRangeException(nameof(_lifeSettings.EvolutionInterval), "must bigger than 0");
-            //}
+            if (_lifeSettings.InitCoordinates.x < 0) throw new ArgumentOutOfRangeException(nameof(_lifeSettings.InitCoordinates.x));
+            if (_lifeSettings.InitCoordinates.y < 0) throw new ArgumentOutOfRangeException(nameof(_lifeSettings.InitCoordinates.y));
         }
 
         protected virtual bool CanAdaptToEnvironment(int aroundAliveLivesCount)

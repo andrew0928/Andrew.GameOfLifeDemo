@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
 
 namespace GameHost1.Universes.Evance.Milestone3
 {
     /// <summary>
-    /// 宇宙，有時間(Time)、空間(IPlanet)、物質(IEnumerable<ILife>)
+    /// 宇宙，有時間(Time)、空間(Planet)，空間上有物質(Life)
     /// </summary>
     public class Universe : IWorld
     {
@@ -13,15 +12,12 @@ namespace GameHost1.Universes.Evance.Milestone3
         private bool _alreadyBigBang = false;
         private Time _time;
         private Planet _planet;
-        private SemaphoreSlim _evolvedSignal;
 
         public (int width, int depth) Dimation { get; }
 
-        public Universe(int width, int depth, int maxConcurrentEvolvingCount = 2)
+        public Universe(int width, int depth)
         {
             this.Dimation = (width, depth);
-
-            _evolvedSignal = new SemaphoreSlim(maxConcurrentEvolvingCount, maxConcurrentEvolvingCount);
         }
 
         /// <summary>
@@ -40,7 +36,13 @@ namespace GameHost1.Universes.Evance.Milestone3
                 return false;
             }
 
-            // TODO: 檢查參數
+            #region 檢查參數
+
+            CheckInputMatrixDimation(init_matrix);
+            CheckInputMatrixDimation(init_cell_frame);
+            CheckInputMatrixDimation(init_cell_start_frame);
+
+            #endregion
 
             BigBang(init_matrix, init_cell_frame, init_cell_start_frame, world_frame);
 
@@ -56,20 +58,14 @@ namespace GameHost1.Universes.Evance.Milestone3
         /// <returns></returns>
         public IEnumerable<(TimeSpan time, ILife[,] matrix)> Running(TimeSpan until)
         {
-            // TODO: 檢查是芥末日到了沒
-
-            // TODO: 每一次 run 都去找有哪些 life 需要演化，把 life 的進化當成排程任務。
-
-            // 先把時間演進塞給所有的 lives ，可以得到這個 round 會演化的 lives
-
-            do
+            while (until > _time.CurrentTime)
             {
                 _time.ElapseOnce();
 
                 _planet.RefreshLastFrameLives();
 
                 yield return (_time.CurrentTime, _planet.LastFrameLives);
-            } while (until > _time.CurrentTime);
+            }
         }
 
         private bool BigBang(bool[,] init_matrix, int[,] init_cell_frame, int[,] init_cell_start_frame, int world_frame)
@@ -115,7 +111,6 @@ namespace GameHost1.Universes.Evance.Milestone3
                         StartDelay = init_cell_start_frame[p.x, p.y],
                         Interval = init_cell_frame[p.x, p.y],
                     },
-                    EvolvedSignal = _evolvedSignal,
                 };
 
                 var life = new Life(lifeSettings);
@@ -124,6 +119,16 @@ namespace GameHost1.Universes.Evance.Milestone3
             }
 
             return lives;
+        }
+
+        private void CheckInputMatrixDimation<T>(T[,] inputMatrix)
+        {
+            if (inputMatrix.Rank != 2 ||
+                inputMatrix.GetLength(0) != this.Dimation.width ||
+                inputMatrix.GetLength(1) != this.Dimation.depth)
+            {
+                throw new ArgumentOutOfRangeException();
+            }
         }
     }
 }

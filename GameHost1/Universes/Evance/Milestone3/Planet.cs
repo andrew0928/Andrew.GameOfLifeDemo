@@ -16,7 +16,12 @@ namespace GameHost1.Universes.Evance.Milestone3
 
         public Planet((int XAsis, int YAsis) maxCoordinates)
         {
-            // TODO: 檢查
+            #region 檢查傳入參數
+
+            if (maxCoordinates.XAsis <= 0) throw new ArgumentOutOfRangeException(nameof(maxCoordinates.XAsis));
+            if (maxCoordinates.YAsis <= 0) throw new ArgumentOutOfRangeException(nameof(maxCoordinates.YAsis));
+
+            #endregion
 
             MaxCoordinates = maxCoordinates;
 

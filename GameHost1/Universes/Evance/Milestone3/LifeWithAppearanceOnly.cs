@@ -7,19 +7,9 @@
     {
         public virtual bool IsAlive { get; }
 
-        public LifeWithAppearanceOnly(bool isAlive)
-        {
-            this.IsAlive = isAlive;
-        }
-
         public LifeWithAppearanceOnly(ILife sourceLife)
         {
             this.IsAlive = sourceLife.IsAlive;
-        }
-
-        public static LifeWithAppearanceOnly Transform(ILife sourceLife)
-        {
-            return new LifeWithAppearanceOnly(sourceLife);
         }
     }
 }
