@@ -98,7 +98,7 @@ namespace GameHost1.Universes.Evance.Milestone3
             var lives = new List<Life>();
 
             // 初始化所有的生命
-            foreach (var p in Program.ForEachPos(init_matrix))
+            foreach (var p in ArrayHelper.ForEachPos(init_matrix))
             {
                 var lifeSettings = new LifeSettings()
                 {
@@ -129,6 +129,11 @@ namespace GameHost1.Universes.Evance.Milestone3
             {
                 throw new ArgumentOutOfRangeException();
             }
+        }
+
+        public IEnumerable<(TimeSpan time, ILife[,] matrix)> Running(TimeSpan until, bool realtime = false)
+        {
+            throw new NotImplementedException();
         }
     }
 }
