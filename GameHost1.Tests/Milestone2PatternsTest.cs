@@ -226,7 +226,7 @@ namespace GameHost1.Tests
             int[,] frames = new int[width, depth];
             int[,] start_frames = new int[width, depth];
             int frame = 10;
-            foreach(var (x, y) in Program.ForEachPos<bool>(input_matrix))
+            foreach(var (x, y) in ArrayHelper.ForEachPos<bool>(input_matrix))
             {
                 frames[x, y] = frame;
             }
@@ -252,12 +252,9 @@ namespace GameHost1.Tests
             if (source.GetLength(0) != target.GetLength(0)) throw new ArgumentOutOfRangeException();
             if (source.GetLength(1) != target.GetLength(1)) throw new ArgumentOutOfRangeException();
 
-            for (int y = 0; y < source.GetLength(1); y++)
+            foreach(var (x, y) in ArrayHelper.ForEachPos<bool>(source))
             {
-                for (int x = 0; x < source.GetLength(0); x++)
-                {
-                    if (source[x, y] != target[x, y].IsAlive) throw new ArgumentException();
-                }
+                if (source[x, y] != target[x, y].IsAlive) throw new ArgumentException();
             }
 
             return;
