@@ -23,15 +23,13 @@ namespace GameHost1
         {
             if (init_matrix.GetLength(0) != Width || init_matrix.GetLength(1) != Depth) throw new ArgumentOutOfRangeException();
             Matrix = new ILife[Width, Depth];
-            for (int y = 0; y < Depth; y++)
+            foreach (var (x, y) in ArrayHelper.ForEachPos<ILife>(Matrix))
             {
-                for (int x = 0; x < Width; x++)
-                {
-                    var id = Guid.NewGuid();
-                    Matrix[x, y] = new Life(id, init_matrix[x, y], new GoogleMaps(this, id));
-                    PositionDict.Add(id, new List<int> { x, y });
-                }
+                var id = Guid.NewGuid();
+                Matrix[x, y] = new Life(id, init_matrix[x, y], new GoogleMaps(this, id));
+                PositionDict.Add(id, new List<int> { x, y });
             }
+
             CellFrame = init_cell_frame;
             WorldFrame = world_frame;
             return true;
@@ -69,20 +67,17 @@ namespace GameHost1
             for (TimeSpan i = TimeSpan.FromMilliseconds(0); i <= until; i += TimeSpan.FromMilliseconds(1))
             {
                 // 新增切換細胞紀錄
-                for (int y = 0; y < Depth; y++)
+                foreach (var (x, y) in ArrayHelper.ForEachPos<ILife>(Matrix))
                 {
-                    for (int x = 0; x < Width; x++)
+                    var cellFrame = CellFrame[x, y];
+                    var lastCellFrame = cellFrameSwitchMoments.ContainsKey(cellFrame) ? cellFrameSwitchMoments[cellFrame].Max() : TimeSpan.FromMilliseconds(0);
+                    if (i - lastCellFrame == TimeSpan.FromMilliseconds(cellFrame))
                     {
-                        var cellFrame = CellFrame[x, y];
-                        var lastCellFrame = cellFrameSwitchMoments.ContainsKey(cellFrame) ? cellFrameSwitchMoments[cellFrame].Max() : TimeSpan.FromMilliseconds(0);
-                        if (i - lastCellFrame == TimeSpan.FromMilliseconds(cellFrame))
+                        if (!cellFrameSwitchMoments.ContainsKey(cellFrame))
                         {
-                            if (!cellFrameSwitchMoments.ContainsKey(cellFrame))
-                            {
-                                cellFrameSwitchMoments[cellFrame] = new List<TimeSpan>();
-                            }
-                            cellFrameSwitchMoments[cellFrame].Add(i); // 10, 20, 30..
+                            cellFrameSwitchMoments[cellFrame] = new List<TimeSpan>();
                         }
+                        cellFrameSwitchMoments[cellFrame].Add(i); // 10, 20, 30..
                     }
                 }
 
@@ -90,22 +85,19 @@ namespace GameHost1
                 if (i - lastWorldFrame == TimeSpan.FromMilliseconds(WorldFrame))
                 {
                     var updatedMatrix = new ILife[Width, Depth];
-                    for (int y = 0; y < Depth; y++)
+                    foreach (var (x, y) in ArrayHelper.ForEachPos<ILife>(Matrix))
                     {
-                        for (int x = 0; x < Width; x++)
+                        var moments = cellFrameSwitchMoments[CellFrame[x, y]];
+                        var currentFrame = i;
+                        // 從 lastFrame 到 currentFrame 如果細胞有動靜再更新
+                        if (moments.Find(x => x > lastWorldFrame && x <= currentFrame) != null)
                         {
-                            var moments = cellFrameSwitchMoments[CellFrame[x, y]];
-                            var currentFrame = i;
-                            // 從 lastFrame 到 currentFrame 如果細胞有動靜再更新
-                            if (moments.Find(x => x > lastWorldFrame && x <= currentFrame) != null)
-                            {
-                                var updatedStatus = Matrix[x, y].GetUpdatedStatus();
-                                updatedMatrix[x, y] = new Life(Matrix[x, y].Id, updatedStatus, Matrix[x, y].GoogleMaps);
-                            }
-                            else
-                            {
-                                updatedMatrix[x, y] = Matrix[x, y];
-                            }
+                            var updatedStatus = Matrix[x, y].GetUpdatedStatus();
+                            updatedMatrix[x, y] = new Life(Matrix[x, y].Id, updatedStatus, Matrix[x, y].GoogleMaps);
+                        }
+                        else
+                        {
+                            updatedMatrix[x, y] = Matrix[x, y];
                         }
                     }
                     Matrix = updatedMatrix;
@@ -113,6 +105,11 @@ namespace GameHost1
                     lastWorldFrame = i;
                 }
             }
+        }
+
+        public IEnumerable<(TimeSpan time, ILife[,] matrix)> Running(TimeSpan until, bool realtime = false)
+        {
+            throw new NotImplementedException();
         }
     }
 }
