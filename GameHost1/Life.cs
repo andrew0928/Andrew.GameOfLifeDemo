@@ -7,18 +7,28 @@ namespace GameHost1
 {
     public class LifeSnapshot : ILife
     {
-        public LifeSnapshot(bool alive)
+        public LifeSnapshot(bool alive, int generation)
         {
             this._alive = alive;
+            this._generation = generation;
         }
 
         private bool _alive;
+        private int _generation;
 
         bool ILife.IsAlive
         {
             get
             {
                 return this._alive;
+            }
+        }
+
+        int ILife.Generation
+        {
+            get
+            {
+                return this._generation;
             }
         }
     }
@@ -38,6 +48,7 @@ namespace GameHost1
         public bool IsAlive { get; private set; }
 
         private int _time_passed = 0;
+        private int _generation = 0;
 
         public Life(out Sensibility sensibility, bool alive, int frame, int start_frames = 0)
         {
@@ -49,11 +60,19 @@ namespace GameHost1
             this._time_passed = start_frames;
         }
 
-        int IRunningObject.Age
+        public int Age
         {
             get
             {
                 return this._time_passed;
+            }
+        }
+
+        public int Generation
+        {
+            get
+            {
+                return this._generation;
             }
         }
 
@@ -79,6 +98,7 @@ namespace GameHost1
 
                 this.IsAlive = result;
                 this._time_passed += this.Frame;
+                this._generation++;
 
                 yield return this._time_passed;
             }

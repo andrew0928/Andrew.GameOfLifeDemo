@@ -156,7 +156,7 @@ namespace GameHost1
             foreach (var (x, y) in ArrayHelper.ForEachPos<Life.Sensibility>(this._maps_current_life_sense))
             {
                 //this._maps_snapshot[x, y] = this._maps_current_life_sense[x, y].TakeSnapshot();
-                this._maps_snapshot[x, y] = new LifeSnapshot(this._maps_current_life_sense[x, y].Itself.IsAlive);
+                this._maps_snapshot[x, y] = new LifeSnapshot(this._maps_current_life_sense[x, y].Itself.IsAlive, this._maps_current_life_sense[x, y].Itself.Generation);
             }
         }
 

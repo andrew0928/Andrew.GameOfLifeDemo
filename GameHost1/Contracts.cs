@@ -14,6 +14,7 @@ namespace GameHost1
 
     public interface ILife
     {
+        public int Generation { get; }
         public bool IsAlive { get; }
     }
 
