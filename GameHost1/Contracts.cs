@@ -14,7 +14,9 @@ namespace GameHost1
 
     public interface ILife
     {
+        //[Newtonsoft.Json.JsonProperty]
         public int Generation { get; }
+        //[Newtonsoft.Json.JsonProperty]
         public bool IsAlive { get; }
     }
 

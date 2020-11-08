@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
@@ -16,7 +17,8 @@ namespace GameHost1
         private bool _alive;
         private int _generation;
 
-        bool ILife.IsAlive
+        //[JsonProperty(PropertyName = "IsAlive")]
+        public bool IsAlive
         {
             get
             {
@@ -24,7 +26,8 @@ namespace GameHost1
             }
         }
 
-        int ILife.Generation
+        //[JsonProperty(PropertyName = "Generation")]
+        public int Generation
         {
             get
             {

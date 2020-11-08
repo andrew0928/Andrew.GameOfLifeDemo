@@ -1,7 +1,9 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -96,6 +98,8 @@ namespace GameHost1
             while(true)
             {
                 this.RefreshFrame();
+
+
                 yield return this._time_passed += this._frame;
             }
         }
@@ -107,6 +111,7 @@ namespace GameHost1
 
             this.RefreshFrame();
             int until_frames = (int)Math.Min(int.MaxValue, until.TotalMilliseconds);
+
 
             //SortedSet<RunningObjectRecord> todoset = new SortedSet<RunningObjectRecord>();
             PriorityQueue<RunningObjectRecord> pqlist = new PriorityQueue<RunningObjectRecord>();
@@ -123,6 +128,7 @@ namespace GameHost1
 
             // world start
             Stopwatch timer = new Stopwatch();
+            timer.Restart();
             do
             {
                 //var item = todoset.Min;
@@ -142,7 +148,11 @@ namespace GameHost1
                     continue;
                 }
 
-                if (item.Source is World) yield return (TimeSpan.FromMilliseconds(item.Enumerator.Current), this._maps_snapshot);
+                if (item.Source is World)
+                {
+                    
+                    yield return (TimeSpan.FromMilliseconds(item.Enumerator.Current), this._maps_snapshot);
+                }
                 if (item.Enumerator.Current >= until_frames) break;
 
             } while (true);

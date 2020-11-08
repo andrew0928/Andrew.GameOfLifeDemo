@@ -21,4 +21,19 @@
     <ProjectReference Include="..\GameHost1\GameHost1.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="milestone3-patterns1.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="milestone3-settings1.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="running1-logs.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="running1-settings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
