@@ -25,7 +25,7 @@ namespace GameHost1
 
         public void Lap() 
         {
-            LapTimes += 10;
+            LapTimes += ConfigurationProvider.MinimumFrame;
 
             if (!IsStarted)
                 TryChangedStartFlag();

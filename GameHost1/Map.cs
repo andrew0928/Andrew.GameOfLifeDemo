@@ -9,6 +9,8 @@ namespace GameHost1
         private int Width { get; set; }
         private int Height { get; set; }
         private Cell[,] Matrix { get; set; }
+
+        private int LapTimes { get; set; } = 0;
         private int Interval { get; set; }
 
         public Map() { }
@@ -78,11 +80,29 @@ namespace GameHost1
                 var elapsed = DateTime.Now - startTime;
                 if (elapsed >= until) break;
 
-                yield return (elapsed, this.GetNextGeneration().Matrix);
-
-                if (realtime) 
-                    Thread.Sleep(Interval);
+                if(LapTimes == Interval) 
+                {
+                    yield return Snapshot(elapsed);
+                    LapTimes = 0;
+                }
+                
+                Thread.Sleep(ConfigurationProvider.MinimumFrame);
+                Lap();
             }
+        }
+
+        private (TimeSpan time, ILife[,] matrix) Snapshot(TimeSpan time) 
+        {
+            return (time, this.GetNextGeneration().Matrix);
+        }
+
+        private void Lap() 
+        {
+            LapTimes += ConfigurationProvider.MinimumFrame;
+
+            for (int y = 0; y < this.Height; y++)
+                for (int x = 0; x < this.Width; x++)
+                    Matrix[x, y].Alarm.Lap();
         }
 
         private void SetPartners()
@@ -118,13 +138,9 @@ namespace GameHost1
             var next = new Map(this.Matrix);
 
             for (int y = 0; y < this.Height; y++)
-            {
                 for (int x = 0; x < this.Width; x++)
-                {
                     next.Matrix[x, y].IsAlive = Matrix[x, y].IsAlive;
-                    next.Matrix[x, y].Alarm.Lap();
-                }
-            }
+
             return next;
         }
     }
