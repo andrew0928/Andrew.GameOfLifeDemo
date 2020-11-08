@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading;
+﻿using System.Threading;
 
 namespace GameHost1
 {
@@ -22,10 +21,10 @@ namespace GameHost1
             StartTime = startTime;
         }
 
-        public void AwakeAfterSleep() 
+        public void AwakeAfterSleep(int proportion) 
         {
-            Thread.Sleep(this.StartTime);
-            this.Alarm.Start();
+            Thread.Sleep(this.StartTime / proportion);
+            this.Alarm.Start(proportion);
         }
 
         /// <summary>

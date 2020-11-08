@@ -37,6 +37,9 @@ namespace GameHost1
         /// <returns></returns>
         public bool Init(bool[,] init_matrix, int[,] init_cell_frame, int[,] init_cell_start_frame, int world_frame)
         {
+            if (this.Matrix != null)
+                return false;
+
             if (init_matrix.GetLength(0) != this.Width
                 || init_matrix.GetLength(1) != this.Height
                 || init_cell_frame.GetLength(0) != this.Width
@@ -66,12 +69,14 @@ namespace GameHost1
             return true;
         }
 
-        public IEnumerable<(TimeSpan time, ILife[,] matrix)> Running(TimeSpan until)
+        public IEnumerable<(TimeSpan time, ILife[,] matrix)> Running(TimeSpan until, bool realtime = false)
         {
             var startTime = DateTime.Now;
+            var proportion = realtime == true ? 1 : 10;
+
             foreach (var cell in Matrix)
             {
-                cell.AwakeAfterSleep();
+                cell.AwakeAfterSleep(proportion);
             }
 
             while (true)
@@ -79,15 +84,9 @@ namespace GameHost1
                 var elapsed = DateTime.Now - startTime;
                 if (elapsed >= until) break;
 
-                yield return (elapsed, Matrix);
+                yield return (elapsed, this.GetNextGeneration().Matrix);
 
-
-                var next = this.GetNextGeneration();
-                //if (CampareMap(next))
-                //    break;
-                this.Matrix = next;
-
-                Thread.Sleep(Interval);
+                Thread.Sleep(Interval / proportion);
             }
         }
 
@@ -119,34 +118,18 @@ namespace GameHost1
             }
         }
 
-        private Cell[,] GetNextGeneration()
+        private Map GetNextGeneration()
         {
-            var next = new Cell[this.Width, this.Height];
+            var next = new Map(this.Matrix);
 
             for (int y = 0; y < this.Height; y++)
             {
                 for (int x = 0; x < this.Width; x++)
                 {
-                    next[x, y] = new Cell
-                    {
-                        IsAlive = Matrix[x, y].IsAlive
-                    };
+                    next.Matrix[x, y].IsAlive = Matrix[x, y].IsAlive;
                 }
             }
             return next;
-        }
-
-        private bool CampareMap(Cell[,] target) 
-        {
-            for (int y = 0; y < Height; y++)
-            {
-                for (int x = 0; x < Width; x++)
-                {
-                    if (target[x, y].IsAlive != this.Matrix[x, y].IsAlive)
-                        return false;
-                }
-            }
-            return true;
         }
     }
 }
