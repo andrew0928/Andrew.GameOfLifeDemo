@@ -74,11 +74,6 @@ namespace GameHost1
             var startTime = DateTime.Now;
             var proportion = realtime == true ? 1 : 10;
 
-            foreach (var cell in Matrix)
-            {
-                cell.AwakeAfterSleep(proportion);
-            }
-
             while (true)
             {
                 var elapsed = DateTime.Now - startTime;
@@ -86,7 +81,7 @@ namespace GameHost1
 
                 yield return (elapsed, this.GetNextGeneration().Matrix);
 
-                Thread.Sleep(Interval / proportion);
+                Thread.Sleep(Interval);
             }
         }
 
@@ -127,6 +122,7 @@ namespace GameHost1
                 for (int x = 0; x < this.Width; x++)
                 {
                     next.Matrix[x, y].IsAlive = Matrix[x, y].IsAlive;
+                    next.Matrix[x, y].Alarm.Lap();
                 }
             }
             return next;

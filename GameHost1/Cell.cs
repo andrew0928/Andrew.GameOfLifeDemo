@@ -1,6 +1,4 @@
-﻿using System.Threading;
-
-namespace GameHost1
+﻿namespace GameHost1
 {
     public class Cell : ILife
     {
@@ -10,21 +8,12 @@ namespace GameHost1
 
         public Alarm Alarm { get; set; }
 
-        private int StartTime { get; set; }
-
         public Cell() {}
 
         public Cell(bool isAlive, int interval, int startTime)
         {
             IsAlive = isAlive;
-            Alarm = new Alarm(interval, Evolve);
-            StartTime = startTime;
-        }
-
-        public void AwakeAfterSleep(int proportion) 
-        {
-            Thread.Sleep(this.StartTime / proportion);
-            this.Alarm.Start(proportion);
+            Alarm = new Alarm(startTime, interval, Evolve);
         }
 
         /// <summary>

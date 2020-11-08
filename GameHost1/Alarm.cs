@@ -1,45 +1,54 @@
 ﻿using System;
-using System.Timers;
 
 namespace GameHost1
 {
     public class Alarm
     {
-        private Timer Timer { get; set; }
+        private int StartTime { get; set; }
 
-        private Action Action { get; set; }
+        private bool IsStarted { get; set; } = false;
 
         private int Interval { get; set; }
 
-        public Alarm(int interval, Action action) 
+        private int LapTimes { get; set; }
+
+        private Action Action { get; set; }
+
+        public Alarm(int startTime, int interval, Action action) 
         {
-            this.Action = action;
+            this.StartTime = startTime;
             this.Interval = interval;
+            this.Action = action;
+
+            this.IsStarted = StartTime == 0;
         }
 
-        public void Start(int proportion) 
+        public void Lap() 
         {
-            this.Timer = new Timer(this.Interval / proportion);
-            this.Timer.Elapsed += OnTimedEvent;
-            this.Timer.AutoReset = true;
-            this.Timer.Enabled = true;
+            LapTimes += 10;
 
-            this.Timer.Start();
+            if (!IsStarted)
+                Start();
+            if (IsStarted)
+                InvokeOnTimeEvent();
         }
 
-        public void Stop() 
+        private void Start()
         {
-            this.Timer.Stop();
+            if (LapTimes == StartTime)
+            {
+                IsStarted = true;
+                LapTimes = 0;
+            }
         }
 
-        public void Dispose() 
+        private void InvokeOnTimeEvent() 
         {
-            this.Timer.Dispose();
-        }
-
-        private void OnTimedEvent(object source, ElapsedEventArgs e)
-        {
-            Action.Invoke();
+            if (LapTimes == Interval)
+            {
+                Action.Invoke();
+                LapTimes = 0;
+            }
         }
     }
 }
