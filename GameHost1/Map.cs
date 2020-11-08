@@ -72,7 +72,6 @@ namespace GameHost1
         public IEnumerable<(TimeSpan time, ILife[,] matrix)> Running(TimeSpan until, bool realtime = false)
         {
             var startTime = DateTime.Now;
-            var proportion = realtime == true ? 1 : 10;
 
             while (true)
             {
@@ -81,7 +80,8 @@ namespace GameHost1
 
                 yield return (elapsed, this.GetNextGeneration().Matrix);
 
-                Thread.Sleep(Interval);
+                if (realtime) 
+                    Thread.Sleep(Interval);
             }
         }
 

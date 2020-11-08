@@ -28,12 +28,12 @@ namespace GameHost1
             LapTimes += 10;
 
             if (!IsStarted)
-                Start();
+                TryChangedStartFlag();
             if (IsStarted)
-                InvokeOnTimeEvent();
+                TryInvokeOnTimeEvent();
         }
 
-        private void Start()
+        private void TryChangedStartFlag()
         {
             if (LapTimes == StartTime)
             {
@@ -42,7 +42,7 @@ namespace GameHost1
             }
         }
 
-        private void InvokeOnTimeEvent() 
+        private void TryInvokeOnTimeEvent() 
         {
             if (LapTimes == Interval)
             {
