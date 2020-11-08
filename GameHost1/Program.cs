@@ -16,6 +16,7 @@ namespace GameHost1
         {
             return new World(width, depth);
         }
+
         private static void Init(bool[,] matrix, int[,] frames, int cell_frame = 10, int rate = 20)
         {
             Random rnd = new Random();

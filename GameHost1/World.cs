@@ -98,8 +98,6 @@ namespace GameHost1
             while(true)
             {
                 this.RefreshFrame();
-
-
                 yield return this._time_passed += this._frame;
             }
         }
@@ -113,17 +111,17 @@ namespace GameHost1
             int until_frames = (int)Math.Min(int.MaxValue, until.TotalMilliseconds);
 
 
-            //SortedSet<RunningObjectRecord> todoset = new SortedSet<RunningObjectRecord>();
-            PriorityQueue<RunningObjectRecord> pqlist = new PriorityQueue<RunningObjectRecord>();
+            SortedSet<RunningObjectRecord> todoset = new SortedSet<RunningObjectRecord>();
+            //PriorityQueue<RunningObjectRecord> pqlist = new PriorityQueue<RunningObjectRecord>();
 
             foreach (var (x, y) in ArrayHelper.ForEachPos<Life.Sensibility>(this._maps_current_life_sense))
             {
                 var sense = this._maps_current_life_sense[x, y];
-                //todoset.Add(new RunningObjectRecord(sense.Itself));
-                pqlist.Enqueue(new RunningObjectRecord(sense.Itself));
+                todoset.Add(new RunningObjectRecord(sense.Itself));
+                //pqlist.Enqueue(new RunningObjectRecord(sense.Itself));
             }
-            //todoset.Add(new RunningObjectRecord(this));
-            pqlist.Enqueue(new RunningObjectRecord(this));
+            todoset.Add(new RunningObjectRecord(this));
+            //pqlist.Enqueue(new RunningObjectRecord(this));
 
 
             // world start
@@ -131,15 +129,14 @@ namespace GameHost1
             timer.Restart();
             do
             {
-                //var item = todoset.Min;
-                //todoset.Remove(item);
-
-                var item = pqlist.Dequeue();
+                var item = todoset.Min;
+                todoset.Remove(item);
+                //var item = pqlist.Dequeue();
 
                 if (item.Enumerator.MoveNext())
                 {
-                    //todoset.Add(item);
-                    pqlist.Enqueue(item);
+                    todoset.Add(item);
+                    //pqlist.Enqueue(item);
                     if (realtime) SpinWait.SpinUntil(() => { return timer.ElapsedMilliseconds >= item.Enumerator.Current; });
                 }
                 else
@@ -165,7 +162,6 @@ namespace GameHost1
         {
             foreach (var (x, y) in ArrayHelper.ForEachPos<Life.Sensibility>(this._maps_current_life_sense))
             {
-                //this._maps_snapshot[x, y] = this._maps_current_life_sense[x, y].TakeSnapshot();
                 this._maps_snapshot[x, y] = new LifeSnapshot(this._maps_current_life_sense[x, y].Itself.IsAlive, this._maps_current_life_sense[x, y].Itself.Generation);
             }
         }

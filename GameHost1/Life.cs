@@ -10,30 +10,12 @@ namespace GameHost1
     {
         public LifeSnapshot(bool alive, int generation)
         {
-            this._alive = alive;
-            this._generation = generation;
+            this.IsAlive = alive;
+            this.Generation = generation;
         }
 
-        private bool _alive;
-        private int _generation;
-
-        //[JsonProperty(PropertyName = "IsAlive")]
-        public bool IsAlive
-        {
-            get
-            {
-                return this._alive;
-            }
-        }
-
-        //[JsonProperty(PropertyName = "Generation")]
-        public int Generation
-        {
-            get
-            {
-                return this._generation;
-            }
-        }
+        public bool IsAlive { get; private set; }
+        public int Generation { get; private set; }
     }
 
     public class Life : ILife, IRunningObject
@@ -50,8 +32,6 @@ namespace GameHost1
        
         public bool IsAlive { get; private set; }
 
-        private int _time_passed = 0;
-        private int _generation = 0;
 
         public Life(out Sensibility sensibility, bool alive, int frame, int start_frames = 0)
         {
@@ -60,25 +40,11 @@ namespace GameHost1
             this.IsAlive = alive;
             this.Frame = frame;
 
-            this._time_passed = start_frames;
+            this.Age = start_frames;
         }
 
-        public int Age
-        {
-            get
-            {
-                return this._time_passed;
-            }
-        }
-
-        public int Generation
-        {
-            get
-            {
-                return this._generation;
-            }
-        }
-
+        public int Age { get; private set; }
+        public int Generation { get; private set; }
 
         IEnumerable<int> IRunningObject.AsTimePass()
         {
@@ -100,10 +66,10 @@ namespace GameHost1
                 }
 
                 this.IsAlive = result;
-                this._time_passed += this.Frame;
-                this._generation++;
+                this.Age += this.Frame;
+                this.Generation++;
 
-                yield return this._time_passed;
+                yield return this.Age;
             }
         }
 
@@ -119,7 +85,7 @@ namespace GameHost1
                 this.Itself = itself;
             }
 
-            public void InitWorldSide(ILifeVision reality, (int x, int y) position/*, Func<Life[,]> visibility*/)
+            public void InitWorldSide(ILifeVision reality, (int x, int y) position)
             {
                 this._vision = reality;
                 this._position = position;
@@ -130,14 +96,6 @@ namespace GameHost1
                 if (this._vision == null) throw new InvalidOperationException("world not initialized.");
                 return this._vision.SeeAround(this._position.x, this._position.y);
             }
-
-            //public ILife TakeSnapshot()
-            //{
-            //    return new LifeSnapshot()
-            //    {
-            //        Alive = this.Itself.IsAlive
-            //    };
-            //}
         }
     }
 
