@@ -62,10 +62,6 @@ namespace GameHost1
 
         public IEnumerable<(TimeSpan time, ILife[,] matrix)> Running(TimeSpan until, bool realtime = false)
         {
-            // TODO: realtime stuff
-            // if (realtime == true) throw new NotImplementedException();
-
-
             var lastWorldFrame = TimeSpan.FromMilliseconds(0);
             var cellFrameSwitchMoments = new Dictionary<int, List<TimeSpan>>();
 
