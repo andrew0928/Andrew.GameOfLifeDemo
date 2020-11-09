@@ -91,7 +91,7 @@ namespace GameHost1
                     "running-settings.json",
                     JsonConvert.SerializeObject(new
                     {
-                        InitMapFrame = 50,
+                        InitMapFrame = world_frame,
                         InitMap = matrix,
                         InitFrames = frames,
                         InitStarts = start_frames
@@ -144,7 +144,8 @@ namespace GameHost1
                             Time = (int)frame.time.TotalMilliseconds,
                             Maps = frame.matrix
                         }) + "\n");
-                    Thread.Sleep(1000);
+                    //Thread.Sleep(2000);
+                    Console.ReadLine();
                 }
             }
         }
