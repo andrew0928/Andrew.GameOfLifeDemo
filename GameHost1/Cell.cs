@@ -3,17 +3,23 @@
     public class Cell : ILife
     {
         public bool IsAlive { get; set; }
-
         public Cell[,] Partners { get; set; }
 
-        public Alarm Alarm { get; set; }
+        private bool IsActive { get; set; }
+        private int Interval { get; set; }
+        private int ActiveTime { get; set; }
+        public Clock Clock { get; set; }
 
         public Cell() {}
 
-        public Cell(bool isAlive, int interval, int startTime)
+        public Cell(bool isAlive, int interval, int activeTime)
         {
             IsAlive = isAlive;
-            Alarm = new Alarm(startTime, interval, Evolve);
+
+            this.Interval = interval;
+            this.ActiveTime = activeTime;
+            this.Clock = new Clock(LapAction);
+            this.IsActive = ActiveTime == 0;
         }
 
         /// <summary>
@@ -48,10 +54,27 @@
             return isAlive;
         }
 
-        public void Evolve() 
+        private void Evolve() 
         {
             if (Partners != null)
                 this.IsAlive = CheckIsAlive();
+        }
+
+        private void LapAction()
+        {
+            if (IsActive)
+            {
+                if (Clock.LapTimes % Interval == 0)
+                    Evolve();
+            }
+            else
+            {
+                if (Clock.LapTimes == ActiveTime)
+                {
+                    IsActive = true;
+                    Clock.Reset();
+                }
+            }
         }
     }
 }
