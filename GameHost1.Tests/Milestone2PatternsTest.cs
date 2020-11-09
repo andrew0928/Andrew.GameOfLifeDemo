@@ -214,10 +214,9 @@ namespace GameHost1.Tests
         }
 
 
-        private bool BasicPatternTest(string[] input, params string[][] expected_results)
+        private bool BasicPatternTest(params string[][] expected_sequence)
         {
-            bool[,] input_matrix = MatrixHelper._Transform(input);
-            //bool[,] expected_matrix = _Transform(expected_result);
+            bool[,] input_matrix = MatrixHelper._Transform(expected_sequence[0]);
 
             int width = input_matrix.GetLength(0);
             int depth = input_matrix.GetLength(1);
@@ -237,8 +236,8 @@ namespace GameHost1.Tests
             int count = 0;
             foreach(var lifes in world.Running(TimeSpan.MaxValue, false))
             {
-                if (count >= expected_results.GetLength(0)) break;
-                bool[,] expected_matrix = MatrixHelper._Transform(expected_results[count++]);
+                if (count >= expected_sequence.GetLength(0)) break;
+                bool[,] expected_matrix = MatrixHelper._Transform(expected_sequence[count++]);
                 
                 MatrixHelper.CompareMatrix(expected_matrix, lifes.matrix);
             }

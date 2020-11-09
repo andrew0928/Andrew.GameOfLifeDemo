@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿//#define ENABLE_RUNNING_RECORDING
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -30,43 +31,66 @@ namespace GameHost1
 
         public static void Main(string[] args)
         {
-            const int width = 50;
-            const int depth = 20;
-            const bool _enable_running_log = false;
-
-            const bool realtime = true;
-            const bool display = true;
-            const int  world_frame = 100;
 
             TimeSpan until = TimeSpan.FromMinutes(10);
 
 
 
             #region Init the world...
+#if (ENABLE_RUNNING_RECORDING)
+            const int width = 5;
+            const int depth = 5;
+            const int world_frame = 100;
+            const bool _enable_running_recording = true;
+            const bool realtime = true;
+            const bool display = true;
 
             IWorld world = CreateWorld(width, depth);
-            bool[,] matrix = new bool[width, depth];
-            //{
-            //    { false, false, false, false, false },
-            //    { false, true , true , true , false },
-            //    { false, true , true , true , false },
-            //    { false, true , true , true , false },
-            //    { false, false, false, false, false }
-            //};
-            int[,] frames = new int[width, depth];
-            //{
-            //    { 30, 30, 30, 30, 30 },
-            //    { 30, 30, 70, 30, 30 },
-            //    { 30, 70, 70, 70, 30 },
-            //    { 30, 30, 70, 30, 30 },
-            //    { 30, 30, 30, 30, 30 },
-            //};
-            int[,] start_frames = new int[width, depth];
 
+            bool[,] matrix = new bool[width, depth]
+            {
+                { false, false, false, false, false },
+                { false, true , true , true , false },
+                { false, true , true , true , false },
+                { false, true , true , true , false },
+                { false, false, false, false, false }
+            };
+            int[,] frames = new int[width, depth]
+            {
+                { 30, 30, 30, 30, 30 },
+                { 30, 30, 70, 30, 30 },
+                { 30, 70, 70, 70, 30 },
+                { 30, 30, 70, 30, 30 },
+                { 30, 30, 30, 30, 30 },
+            };
+            int[,] start_frames = new int[width, depth]
+            {
+                { 0, 0, 0, 0, 0 },
+                { 0, 0, 0, 0, 0 },
+                { 0, 0, 0, 0, 0 },
+                { 0, 0, 0, 0, 0 },
+                { 0, 0, 0, 0, 0 },
+            };
+
+#else
+            const int width = 50;
+            const int depth = 20;
+            const int world_frame = 100;
+            const bool _enable_running_recording = false;
+            const bool realtime = true;
+            const bool display = true;
+
+            IWorld world = CreateWorld(width, depth);
+
+            bool[,] matrix = new bool[width, depth];
+            int[,] frames = new int[width, depth];
+            int[,] start_frames = new int[width, depth];
             Init(matrix, frames, world_frame, 20);
+#endif
+    
             world.Init(matrix, frames, start_frames, world_frame);
             
-            if (_enable_running_log)
+            if (_enable_running_recording)
             {
                 File.Delete("running-settings.json");
                 File.Delete("running-logs.json");
@@ -82,7 +106,7 @@ namespace GameHost1
                     }) + "\n");
             }
 
-            #endregion
+#endregion
 
 
 
@@ -119,7 +143,7 @@ namespace GameHost1
                 Console.WriteLine($"total lives: {live_count}, time frame: {time} / {until}, speed up: {time.TotalMilliseconds / realtime_timer.ElapsedMilliseconds:0.##}X                 ");
 
 
-                if (_enable_running_log)
+                if (_enable_running_recording)
                 {
                     File.AppendAllText(
                         "running-logs.json",

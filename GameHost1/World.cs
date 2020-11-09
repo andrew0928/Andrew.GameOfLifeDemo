@@ -148,7 +148,7 @@ namespace GameHost1
                     continue;
                 }
 
-                if (item.Source is World && current_time > 0)    // 按照 unit test 的規則，第一 round 應該是第一次演化的結果。不包含初始化的狀態。
+                if (item.Source is World)
                 {
                     Debug.WriteLine($"- running: {current_time}");
                     this.RefreshFrame();
