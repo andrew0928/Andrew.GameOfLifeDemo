@@ -10,8 +10,9 @@ namespace GameHost1
         private int Height { get; set; }
         private Cell[,] Matrix { get; set; }
 
-        private int LapTimes { get; set; } = 0;
         private int Interval { get; set; }
+        private int LapTimes { get; set; } = 0;
+        private TimeSpan Elapsed { get; set; } = TimeSpan.Zero;
 
         public Map() { }
 
@@ -73,32 +74,34 @@ namespace GameHost1
 
         public IEnumerable<(TimeSpan time, ILife[,] matrix)> Running(TimeSpan until, bool realtime = false)
         {
-            var startTime = DateTime.Now;
-
             while (true)
             {
-                var elapsed = DateTime.Now - startTime;
-                if (elapsed >= until) break;
+                if (this.Elapsed >= until) break;
 
-                if(LapTimes == Interval) 
+                if(this.LapTimes != 0 && this.LapTimes % this.Interval == 0) 
                 {
-                    yield return Snapshot(elapsed);
-                    LapTimes = 0;
+                    yield return Snapshot();
                 }
-                
-                Thread.Sleep(ConfigurationProvider.MinimumFrame);
+
+                if(realtime)
+                    Thread.Sleep(ConfigProvider.MinimumFrame);
+
                 Lap();
             }
         }
 
-        private (TimeSpan time, ILife[,] matrix) Snapshot(TimeSpan time) 
+        private (TimeSpan time, ILife[,] matrix) Snapshot() 
         {
-            return (time, this.GetNextGeneration().Matrix);
+            return (this.Elapsed, this.GetNextGeneration().Matrix);
         }
 
+        /// <summary>
+        /// 按碼錶
+        /// </summary>
         private void Lap() 
         {
-            LapTimes += ConfigurationProvider.MinimumFrame;
+            this.LapTimes += ConfigProvider.MinimumFrame;
+            this.Elapsed = this.Elapsed.Add(TimeSpan.FromMilliseconds(ConfigProvider.MinimumFrame));
 
             for (int y = 0; y < this.Height; y++)
                 for (int x = 0; x < this.Width; x++)

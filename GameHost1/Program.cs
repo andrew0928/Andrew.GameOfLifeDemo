@@ -1,12 +1,8 @@
 ﻿using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Threading;
-﻿using System;
-using System.Diagnostics;
 
 namespace GameHost1
 {
@@ -44,10 +40,10 @@ namespace GameHost1
             const bool _enable_running_log = false;
 
             // 是否用 realtime mode 執行模擬?
-            const bool realtime = true;
+            const bool realtime = false;
 
             // 是否顯示 world 的運行狀況?
-            const bool display = true;
+            const bool display = false;
 
             // 指定 world 刷新一次的週期 (單位: msec)
             const int  world_frame = 100;
