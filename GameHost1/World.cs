@@ -35,6 +35,7 @@ namespace GameHost1
             return true;
         }
 
+
         public ILife[,] GetNearbyData(Guid cellId)
         {
             if (Matrix == null) throw new ArgumentException();
@@ -57,16 +58,18 @@ namespace GameHost1
             return (x >= 0 && y >= 0 && x < Width && y < Depth) ? Matrix[x, y] : null;
         }
 
-        /// <summary>
-        /// 根據經過的時間長度和定義過的 frame, 回傳每個時間點的 Matrix
-        /// </summary>
-        public IEnumerable<(TimeSpan time, ILife[,] matrix)> Running(TimeSpan until)
+        public IEnumerable<(TimeSpan time, ILife[,] matrix)> Running(TimeSpan until, bool realtime = false)
         {
+            // TODO: realtime stuff
+            if (realtime == true) throw new NotImplementedException();
+
+
+
             var lastWorldFrame = TimeSpan.FromMilliseconds(0);
             var cellFrameSwitchMoments = new Dictionary<int, List<TimeSpan>>();
-            for (TimeSpan i = TimeSpan.FromMilliseconds(0); i <= until; i += TimeSpan.FromMilliseconds(1))
+            for (TimeSpan i = TimeSpan.FromMilliseconds(0); i <= until; i += TimeSpan.FromMilliseconds(10))
             {
-                // 新增切換細胞紀錄
+                // 新增切換細胞生死狀態的一筆紀錄 (但還沒切換)
                 foreach (var (x, y) in ArrayHelper.ForEachPos<ILife>(Matrix))
                 {
                     var cellFrame = CellFrame[x, y];
@@ -87,7 +90,16 @@ namespace GameHost1
                     var updatedMatrix = new ILife[Width, Depth];
                     foreach (var (x, y) in ArrayHelper.ForEachPos<ILife>(Matrix))
                     {
-                        var moments = cellFrameSwitchMoments[CellFrame[x, y]];
+                        var cellFrame = CellFrame[x, y];
+                        if (!cellFrameSwitchMoments.ContainsKey(cellFrame))
+                        {
+                            // 還不需要切換生死狀態
+                            updatedMatrix[x, y] = Matrix[x, y];
+                            continue;
+                        }
+
+
+                        List<TimeSpan> moments = cellFrameSwitchMoments[cellFrame];
                         var currentFrame = i;
                         // 從 lastFrame 到 currentFrame 如果細胞有動靜再更新
                         if (moments.Find(x => x > lastWorldFrame && x <= currentFrame) != null)
@@ -97,6 +109,7 @@ namespace GameHost1
                         }
                         else
                         {
+                            // 還不需要切換生死狀態
                             updatedMatrix[x, y] = Matrix[x, y];
                         }
                     }
@@ -105,11 +118,6 @@ namespace GameHost1
                     lastWorldFrame = i;
                 }
             }
-        }
-
-        public IEnumerable<(TimeSpan time, ILife[,] matrix)> Running(TimeSpan until, bool realtime = false)
-        {
-            throw new NotImplementedException();
         }
     }
 }

@@ -35,14 +35,14 @@ namespace GameHost1
             //
             #region world configuration
             // IWorld 模擬環境的範圍
-            const int width = 50;
-            const int depth = 20;
+            const int width = 5;
+            const int depth = 5;
 
             // 是否啟用 logging ? 會記錄 init / running 的過程，預設值 false.
             const bool _enable_running_log = false;
 
             // 是否用 realtime mode 執行模擬?
-            const bool realtime = true;
+            const bool realtime = false;
 
             // 是否顯示 world 的運行狀況?
             const bool display = true;
@@ -58,25 +58,25 @@ namespace GameHost1
             #region Init the world...
 
             IWorld world = CreateWorld(width, depth);
-            bool[,] matrix = new bool[width, depth];
-            //{
-            //    { false, false, false, false, false },
-            //    { false, true , true , true , false },
-            //    { false, true , true , true , false },
-            //    { false, true , true , true , false },
-            //    { false, false, false, false, false }
-            //};
-            int[,] frames = new int[width, depth];
-            //{
-            //    { 30, 30, 30, 30, 30 },
-            //    { 30, 30, 70, 30, 30 },
-            //    { 30, 70, 70, 70, 30 },
-            //    { 30, 30, 70, 30, 30 },
-            //    { 30, 30, 30, 30, 30 },
-            //};
+            bool[,] matrix = new bool[width, depth] // ;
+            {
+               { false, false, false, false, false },
+               { false, true , true , true , false },
+               { false, true , true , true , false },
+               { false, true , true , true , false },
+               { false, false, false, false, false }
+            };
+            int[,] frames = new int[width, depth] // ;
+            {
+               { 30, 30, 30, 30, 30 },
+               { 30, 30, 70, 30, 30 },
+               { 30, 70, 70, 70, 30 },
+               { 30, 30, 70, 30, 30 },
+               { 30, 30, 30, 30, 30 },
+            };
             int[,] start_frames = new int[width, depth];
 
-            Init(matrix, frames, world_frame, 20);
+            // Init(matrix, frames, world_frame, 20);
             world.Init(matrix, frames, start_frames, world_frame);
             
             if (_enable_running_log)
