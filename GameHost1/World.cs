@@ -1,6 +1,8 @@
+using System.Threading;
 using System.Linq;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace GameHost1
 {
@@ -61,14 +63,18 @@ namespace GameHost1
         public IEnumerable<(TimeSpan time, ILife[,] matrix)> Running(TimeSpan until, bool realtime = false)
         {
             // TODO: realtime stuff
-            if (realtime == true) throw new NotImplementedException();
-
+            // if (realtime == true) throw new NotImplementedException();
 
 
             var lastWorldFrame = TimeSpan.FromMilliseconds(0);
             var cellFrameSwitchMoments = new Dictionary<int, List<TimeSpan>>();
+
+
             for (TimeSpan i = TimeSpan.FromMilliseconds(0); i <= until; i += TimeSpan.FromMilliseconds(10))
             {
+                Stopwatch realtime_timer = new Stopwatch();
+                realtime_timer.Restart();
+
                 // 新增切換細胞生死狀態的一筆紀錄 (但還沒切換)
                 foreach (var (x, y) in ArrayHelper.ForEachPos<ILife>(Matrix))
                 {
@@ -116,6 +122,11 @@ namespace GameHost1
                     Matrix = updatedMatrix;
                     yield return (i, updatedMatrix);
                     lastWorldFrame = i;
+                }
+
+                if (realtime == true && realtime_timer.ElapsedMilliseconds < 10)
+                {
+                    Thread.Sleep((int)(10 - realtime_timer.ElapsedMilliseconds));
                 }
             }
         }
