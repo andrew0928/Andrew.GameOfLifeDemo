@@ -36,7 +36,6 @@ namespace GameHost1
 
 
 
-            #region Init the world...
 #if (ENABLE_RUNNING_RECORDING)
             const int width = 5;
             const int depth = 5;
@@ -105,8 +104,6 @@ namespace GameHost1
                         InitStarts = start_frames
                     }) + "\n");
             }
-
-#endregion
 
 
 
