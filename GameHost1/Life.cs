@@ -64,10 +64,9 @@ namespace GameHost1
             {
                 this.Age += this.Frame;
                 yield return this.Age;
+
+
                 this.Generation++;
-
-
-                Debug.WriteLine($"- life: #{this.ID}, {this.Age}, {this.IsAlive}");
                 int around_lifes_count = 0;
                 foreach (ILife l in this._sensibility.SeeAround()) if (l != null && l.IsAlive) around_lifes_count++;
 
@@ -81,7 +80,7 @@ namespace GameHost1
                     result = _reborn_rules[around_lifes_count];
                 }
                 this.IsAlive = result;
-
+                Debug.WriteLine($"- life: #{this.ID}, {this.Age}, {this.IsAlive}");
             }
         }
 

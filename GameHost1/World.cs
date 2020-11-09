@@ -110,46 +110,37 @@ namespace GameHost1
 
         public IEnumerable<(TimeSpan time, ILife[,] matrix)> Running(TimeSpan until, bool realtime = false)
         {
-            
             if (!this._is_init) throw new InvalidOperationException();
 
             this.RefreshFrame();
             int until_frames = (int)Math.Min(int.MaxValue, until.TotalMilliseconds);
 
-            //yield return (TimeSpan.Zero, this._maps_snapshot);
-
             SortedSet<RunningObjectRecord> todoset = new SortedSet<RunningObjectRecord>();
-            //PriorityQueue<RunningObjectRecord> pqlist = new PriorityQueue<RunningObjectRecord>();
-
             foreach (var (x, y) in ArrayHelper.ForEachPos<Life.Sensibility>(this._maps_current_life_sense))
             {
                 var sense = this._maps_current_life_sense[x, y];
                 todoset.Add(new RunningObjectRecord(sense.Itself));
-                //pqlist.Enqueue(new RunningObjectRecord(sense.Itself));
             }
             todoset.Add(new RunningObjectRecord(this));
-            //pqlist.Enqueue(new RunningObjectRecord(this));
 
 
             // world start
             Stopwatch timer = new Stopwatch();
             timer.Restart();
-            int now = 0;
+            int current_time = 0;
+
             do
             {
                 var item = todoset.Min;
                 todoset.Remove(item);
-                //var item = pqlist.Dequeue();
 
                 if (item.Enumerator.Current >= until_frames) break;
-                now = item.Enumerator.Current;
-
+                current_time = item.Enumerator.Current;
 
                 if (item.Enumerator.MoveNext())
                 {
                     todoset.Add(item);
-                    //pqlist.Enqueue(item);
-                    if (realtime) SpinWait.SpinUntil(() => { return timer.ElapsedMilliseconds >= now; });
+                    if (realtime) SpinWait.SpinUntil(() => { return timer.ElapsedMilliseconds >= current_time; });
                 }
                 else
                 {
@@ -157,17 +148,15 @@ namespace GameHost1
                     continue;
                 }
 
-                if (item.Source is World && now > 0)    // 按照 unit test 的規則，第一 round 應該是第一次演化的結果。不包含初始化的狀態。
+                if (item.Source is World && current_time > 0)    // 按照 unit test 的規則，第一 round 應該是第一次演化的結果。不包含初始化的狀態。
                 {
-                    Debug.WriteLine($"- running: {now}");
+                    Debug.WriteLine($"- running: {current_time}");
                     this.RefreshFrame();
-                    yield return (TimeSpan.FromMilliseconds(now), this._maps_snapshot);
+                    yield return (TimeSpan.FromMilliseconds(current_time), this._maps_snapshot);
                 }
 
             } while (true);
         }
-
-
 
 
         private void RefreshFrame()
@@ -211,9 +200,7 @@ namespace GameHost1
         private class RunningObjectRecord : IComparable<RunningObjectRecord>
         {
             public IRunningObject Source { get; private set; }
-
             public IEnumerator<int> Enumerator { get; private set; }
-
             public RunningObjectRecord(IRunningObject source)
             {
                 this.Source = source;
@@ -229,16 +216,12 @@ namespace GameHost1
             {
                 if (this.Source.Age == other.Source.Age)
                 {
-                    //if (this.Source is World) return 1;
-                    //if (other.Source is World) return -1;
                     return this.Source.ID.CompareTo(other.Source.ID); // normal order
                 }
                 else
                 {
                     return this.Source.Age.CompareTo(other.Source.Age);
                 }
-
-                //return (this.Source.Age * 10000 + this.Source.ID) - (other.Source.Age * 10000 + other.Source.ID);
             }
         }
 
