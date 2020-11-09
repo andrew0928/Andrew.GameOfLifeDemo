@@ -216,7 +216,8 @@ namespace GameHost1.Tests
 
         private bool BasicPatternTest(string[] input, params string[][] expected_results)
         {
-            bool[,] input_matrix = _Transform(input);
+            bool[,] input_matrix = MatrixHelper._Transform(input);
+            //bool[,] expected_matrix = _Transform(expected_result);
 
             int width = input_matrix.GetLength(0);
             int depth = input_matrix.GetLength(1);
@@ -234,51 +235,16 @@ namespace GameHost1.Tests
             world.Init(input_matrix, frames, start_frames, 10);
 
             int count = 0;
-            foreach(var lifes in world.Running(TimeSpan.MaxValue))
+            foreach(var lifes in world.Running(TimeSpan.MaxValue, false))
             {
                 if (count >= expected_results.GetLength(0)) break;
-                bool[,] expected_matrix = _Transform(expected_results[count++]);
+                bool[,] expected_matrix = MatrixHelper._Transform(expected_results[count++]);
                 
-                CompareMatrix(expected_matrix, lifes.matrix);
+                MatrixHelper.CompareMatrix(expected_matrix, lifes.matrix);
             }
             return true;
         }
 
-
-        private void CompareMatrix(bool[,] source, ILife[,] target)
-        {
-            if (source == null) throw new ArgumentNullException();
-            if (target == null) throw new ArgumentNullException();
-            if (source.GetLength(0) != target.GetLength(0)) throw new ArgumentOutOfRangeException();
-            if (source.GetLength(1) != target.GetLength(1)) throw new ArgumentOutOfRangeException();
-
-            foreach(var (x, y) in ArrayHelper.ForEachPos<bool>(source))
-            {
-                if (source[x, y] != target[x, y].IsAlive) throw new ArgumentException();
-            }
-
-            return;
-        }
-
-        private bool[,] _Transform(string[] map)
-        {
-            bool[,] matrix = new bool[map[0].Length, map.Length];
-
-            int x = 0;
-            int y = 0;
-            foreach (var line in map)
-            {
-                foreach (var c in line)
-                {
-                    matrix[x, y] = (c == '1');
-                    x++;
-                }
-                x = 0;
-                y++;
-            }
-
-            return matrix;
-        }
 
     }
 }
