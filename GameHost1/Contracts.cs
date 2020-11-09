@@ -14,12 +14,19 @@ namespace GameHost1
         /// <param name="until">指定最長的執行時間 (模擬的 world 時間)</param>
         /// <param name="realtime">指定是否模擬實際的時間進行速度? true: 是 (1:1), false: 否 (用最快速度模擬)</param>
         /// <returns></returns>
-        public IEnumerable<(TimeSpan time, ILife[,] matrix)> Running(TimeSpan until, bool realtime = false);
+        public IEnumerable<(TimeSpan time, ILife[,] matrix)> Running(TimeSpan until, bool realtime = true);
     }
 
 
     public interface ILife
     {
+        /// <summary>
+        /// 細胞演化次數。Milestone3 如果是 0 則會跳過檢查
+        /// </summary>
+        public int Generation
+        {
+            get { return 0; }
+        }
         public bool IsAlive { get; }
     }
 

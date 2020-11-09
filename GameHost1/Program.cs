@@ -1,3 +1,10 @@
+﻿using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Threading;
 ﻿using System;
 using System.Diagnostics;
 
@@ -22,33 +29,85 @@ namespace GameHost1
             }
         }
 
+
         public static void Main(string[] args)
         {
-            IWorld world = CreateWorld(50, 20);
+            //
+            //  Main Program 的設定參數，都集中在這區。
+            //
+            #region world configuration
+            // IWorld 模擬環境的範圍
+            const int width = 50;
+            const int depth = 20;
+
+            // 是否啟用 logging ? 會記錄 init / running 的過程，預設值 false.
+            const bool _enable_running_log = false;
+
+            // 是否用 realtime mode 執行模擬?
+            const bool realtime = true;
+
+            // 是否顯示 world 的運行狀況?
+            const bool display = true;
+
+            // 指定 world 刷新一次的週期 (單位: msec)
+            const int  world_frame = 100;
+
+            // 指定世界運行的時間長度 ( realtime mode 下 )。超過會中止模擬的程序。
+            TimeSpan until = TimeSpan.FromMinutes(10);
+            #endregion
+
 
             #region Init the world...
 
-            bool[,] matrix = new bool[50, 20];
-            int[,] frames = new int[50, 20];
-            int[,] start_frames = new int[50, 20];
-            Init(matrix, frames, 100, 20);
+            IWorld world = CreateWorld(width, depth);
+            bool[,] matrix = new bool[width, depth];
+            //{
+            //    { false, false, false, false, false },
+            //    { false, true , true , true , false },
+            //    { false, true , true , true , false },
+            //    { false, true , true , true , false },
+            //    { false, false, false, false, false }
+            //};
+            int[,] frames = new int[width, depth];
+            //{
+            //    { 30, 30, 30, 30, 30 },
+            //    { 30, 30, 70, 30, 30 },
+            //    { 30, 70, 70, 70, 30 },
+            //    { 30, 30, 70, 30, 30 },
+            //    { 30, 30, 30, 30, 30 },
+            //};
+            int[,] start_frames = new int[width, depth];
 
+            Init(matrix, frames, world_frame, 20);
+            world.Init(matrix, frames, start_frames, world_frame);
             world.Init(matrix, frames, start_frames, 200);
             
+            if (_enable_running_log)
+            {
+                File.Delete("running-settings.json");
+                File.Delete("running-logs.json");
+
+                File.AppendAllText(
+                    "running-settings.json",
+                    JsonConvert.SerializeObject(new
+                    {
+                        InitMapFrame = 50,
+                        InitMap = matrix,
+                        InitFrames = frames,
+                        InitStarts = start_frames
+                    }) + "\n");
+            }
+
             #endregion
 
 
 
             int count = 0;
-            bool realtime = false;
-            bool display = true;
-
-            TimeSpan until = TimeSpan.FromMinutes(10);
-            Stopwatch realtime_timer = new Stopwatch();
-
-            realtime_timer.Restart();
             Console.CursorVisible = false;
-            foreach(var frame in world.Running(until, realtime))
+
+            Stopwatch realtime_timer = new Stopwatch();
+            realtime_timer.Restart();
+            foreach (var frame in world.Running(until, realtime))
             {
                 count++;
                 int live_count = 0;
@@ -70,7 +129,23 @@ namespace GameHost1
                         Console.WriteLine();
                     }
                 }
-                Console.WriteLine($"total lives: {live_count}, time frame: {time} / {until}, speed up: {time.TotalMilliseconds / realtime_timer.ElapsedMilliseconds}X");
+
+                Console.Write("".PadRight(150, ' '));
+                Console.SetCursorPosition(0, Console.CursorTop);
+                Console.WriteLine($"total lives: {live_count}, time frame: {time} / {until}, speed up: {time.TotalMilliseconds / realtime_timer.ElapsedMilliseconds:0.##}X                 ");
+
+
+                if (_enable_running_log)
+                {
+                    File.AppendAllText(
+                        "running-logs.json",
+                        JsonConvert.SerializeObject(new
+                        {
+                            Time = (int)frame.time.TotalMilliseconds,
+                            Maps = frame.matrix
+                        }) + "\n");
+                    Thread.Sleep(1000);
+                }
             }
         }
 
