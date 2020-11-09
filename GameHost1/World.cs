@@ -79,6 +79,10 @@ namespace GameHost1
             return true;
         }
 
+        public override string ToString()
+        {
+            return $"world(id: {((IRunningObject)this).ID}, age: {((IRunningObject)this).Age})";
+        }
 
         int IRunningObject.Age
         {
@@ -90,26 +94,29 @@ namespace GameHost1
 
         int IRunningObject.ID
         {
-            get { return -1; }
+            get { return int.MaxValue; }
         }
 
         IEnumerable<int> IRunningObject.AsTimePass()
         {
             while(true)
             {
-                this.RefreshFrame();
-                yield return this._time_passed += this._frame;
+                this._time_passed += this._frame;
+                yield return this._time_passed;
+                Debug.WriteLine($"- world: {this._time_passed}");
             }
         }
 
 
         public IEnumerable<(TimeSpan time, ILife[,] matrix)> Running(TimeSpan until, bool realtime = false)
         {
+            
             if (!this._is_init) throw new InvalidOperationException();
 
             this.RefreshFrame();
             int until_frames = (int)Math.Min(int.MaxValue, until.TotalMilliseconds);
 
+            //yield return (TimeSpan.Zero, this._maps_snapshot);
 
             SortedSet<RunningObjectRecord> todoset = new SortedSet<RunningObjectRecord>();
             //PriorityQueue<RunningObjectRecord> pqlist = new PriorityQueue<RunningObjectRecord>();
@@ -127,17 +134,22 @@ namespace GameHost1
             // world start
             Stopwatch timer = new Stopwatch();
             timer.Restart();
+            int now = 0;
             do
             {
                 var item = todoset.Min;
                 todoset.Remove(item);
                 //var item = pqlist.Dequeue();
 
+                if (item.Enumerator.Current >= until_frames) break;
+                now = item.Enumerator.Current;
+
+
                 if (item.Enumerator.MoveNext())
                 {
                     todoset.Add(item);
                     //pqlist.Enqueue(item);
-                    if (realtime) SpinWait.SpinUntil(() => { return timer.ElapsedMilliseconds >= item.Enumerator.Current; });
+                    if (realtime) SpinWait.SpinUntil(() => { return timer.ElapsedMilliseconds >= now; });
                 }
                 else
                 {
@@ -145,12 +157,12 @@ namespace GameHost1
                     continue;
                 }
 
-                if (item.Source is World)
+                if (item.Source is World && now > 0)    // 按照 unit test 的規則，第一 round 應該是第一次演化的結果。不包含初始化的狀態。
                 {
-                    
-                    yield return (TimeSpan.FromMilliseconds(item.Enumerator.Current), this._maps_snapshot);
+                    Debug.WriteLine($"- running: {now}");
+                    this.RefreshFrame();
+                    yield return (TimeSpan.FromMilliseconds(now), this._maps_snapshot);
                 }
-                if (item.Enumerator.Current >= until_frames) break;
 
             } while (true);
         }
@@ -206,14 +218,27 @@ namespace GameHost1
             {
                 this.Source = source;
                 this.Enumerator = this.Source.AsTimePass().GetEnumerator();
-                if (!this.Enumerator.MoveNext()) throw new InvalidOperationException();
+                //if (!this.Enumerator.MoveNext()) throw new InvalidOperationException();
+            }
+            public override string ToString()
+            {
+                return this.Source.ToString();
             }
 
-            int IComparable<RunningObjectRecord>.CompareTo(RunningObjectRecord other)
+            public int CompareTo(RunningObjectRecord other)
             {
-                int result = this.Source.Age - other.Source.Age;
-                if (result != 0) return result;
-                return this.Source.ID - other.Source.ID;
+                if (this.Source.Age == other.Source.Age)
+                {
+                    //if (this.Source is World) return 1;
+                    //if (other.Source is World) return -1;
+                    return this.Source.ID.CompareTo(other.Source.ID); // normal order
+                }
+                else
+                {
+                    return this.Source.Age.CompareTo(other.Source.Age);
+                }
+
+                //return (this.Source.Age * 10000 + this.Source.ID) - (other.Source.Age * 10000 + other.Source.ID);
             }
         }
 

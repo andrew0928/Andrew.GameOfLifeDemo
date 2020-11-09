@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using System.Threading;
 
@@ -14,6 +15,10 @@ namespace GameHost1
             this.Generation = generation;
         }
 
+        public override string ToString()
+        {
+            return $"life.snapshot(alive:{this.IsAlive}, generation:{this.Generation})";
+        }
         public bool IsAlive { get; private set; }
         public int Generation { get; private set; }
     }
@@ -46,12 +51,23 @@ namespace GameHost1
         public int Age { get; private set; }
         public int Generation { get; private set; }
 
+        public override string ToString()
+        {
+            return $"life(id: {this.ID}, age: {this.Age}, alive: {this.IsAlive})";
+        }
+
         IEnumerable<int> IRunningObject.AsTimePass()
         {
+            if (this._sensibility == null) throw new InvalidOperationException("can not do this if this life is clone");
+
             while (true)
             {
-                if (this._sensibility == null) throw new InvalidOperationException("can not do this if this life is clone");
+                this.Age += this.Frame;
+                yield return this.Age;
+                this.Generation++;
 
+
+                Debug.WriteLine($"- life: #{this.ID}, {this.Age}, {this.IsAlive}");
                 int around_lifes_count = 0;
                 foreach (ILife l in this._sensibility.SeeAround()) if (l != null && l.IsAlive) around_lifes_count++;
 
@@ -64,12 +80,8 @@ namespace GameHost1
                 {
                     result = _reborn_rules[around_lifes_count];
                 }
-
                 this.IsAlive = result;
-                this.Age += this.Frame;
-                this.Generation++;
 
-                yield return this.Age;
             }
         }
 
@@ -95,6 +107,11 @@ namespace GameHost1
             {
                 if (this._vision == null) throw new InvalidOperationException("world not initialized.");
                 return this._vision.SeeAround(this._position.x, this._position.y);
+            }
+
+            public override string ToString()
+            {
+                return this.Itself.ToString();
             }
         }
     }

@@ -30,9 +30,9 @@ namespace GameHost1
 
         public static void Main(string[] args)
         {
-            const int width = 50;
-            const int depth = 20;
-            const bool _enable_running_log = false;
+            const int width = 5;
+            const int depth = 5;
+            const bool _enable_running_log = true;
 
             const bool realtime = true;
             const bool display = true;
@@ -45,25 +45,25 @@ namespace GameHost1
             #region Init the world...
 
             IWorld world = CreateWorld(width, depth);
-            bool[,] matrix = new bool[width, depth];
-            //{
-            //    { false, false, false, false, false },
-            //    { false, true , true , true , false },
-            //    { false, true , true , true , false },
-            //    { false, true , true , true , false },
-            //    { false, false, false, false, false }
-            //};
-            int[,] frames = new int[width, depth];
-            //{
-            //    { 30, 30, 30, 30, 30 },
-            //    { 30, 30, 70, 30, 30 },
-            //    { 30, 70, 70, 70, 30 },
-            //    { 30, 30, 70, 30, 30 },
-            //    { 30, 30, 30, 30, 30 },
-            //};
+            bool[,] matrix = new bool[width, depth]
+            {
+                { false, false, false, false, false },
+                { false, true , true , true , false },
+                { false, true , true , true , false },
+                { false, true , true , true , false },
+                { false, false, false, false, false }
+            };
+            int[,] frames = new int[width, depth]
+            {
+                { 30, 30, 30, 30, 30 },
+                { 30, 30, 70, 30, 30 },
+                { 30, 70, 70, 70, 30 },
+                { 30, 30, 70, 30, 30 },
+                { 30, 30, 30, 30, 30 },
+            };
             int[,] start_frames = new int[width, depth];
 
-            Init(matrix, frames, world_frame, 20);
+            //Init(matrix, frames, world_frame, 20);
             world.Init(matrix, frames, start_frames, world_frame);
             
             if (_enable_running_log)
@@ -75,7 +75,7 @@ namespace GameHost1
                     "running-settings.json",
                     JsonConvert.SerializeObject(new
                     {
-                        InitMapFrame = 50,
+                        InitMapFrame = world_frame,
                         InitMap = matrix,
                         InitFrames = frames,
                         InitStarts = start_frames
@@ -128,7 +128,8 @@ namespace GameHost1
                             Time = (int)frame.time.TotalMilliseconds,
                             Maps = frame.matrix
                         }) + "\n");
-                    Thread.Sleep(2000);
+                    //Thread.Sleep(2000);
+                    Console.ReadLine();
                 }
             }
         }
