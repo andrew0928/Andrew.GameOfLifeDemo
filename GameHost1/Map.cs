@@ -74,6 +74,8 @@ namespace GameHost1
         {
             Clock clock = new Clock(LapAction);
 
+            yield return (TimeSpan.Zero, this.Matrix);
+
             while (true)
             {
                 var elapsed = clock.Elapsed;
