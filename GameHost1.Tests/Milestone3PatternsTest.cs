@@ -56,6 +56,7 @@ namespace GameHost1.Tests
                 foreach (var (x, y) in ArrayHelper.ForEachPos<ILife>(runnings.Current.matrix))
                 {
                     Assert.AreEqual(patterns.Current.Maps[x, y].IsAlive, runnings.Current.matrix[x, y].IsAlive);
+                    
                     //Assert.AreEqual(patterns.Current.Maps[x, y].Generation, runnings.Current.matrix[x, y].Generation);
                 }
 
