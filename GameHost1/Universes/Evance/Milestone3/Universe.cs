@@ -69,8 +69,6 @@ namespace GameHost1.Universes.Evance.Milestone3
 
                 _time.ElapseOnce();
 
-                //_planet.RefreshLastFrameLives();
-
                 if (realtime)
                 {
                     var diff = DateTime.Now.Subtract(startTimeSpan);
@@ -78,7 +76,6 @@ namespace GameHost1.Universes.Evance.Milestone3
                     {
                         var sleep = _time.Interval.Subtract(diff);
                         Thread.Sleep(sleep);
-                        //Console.WriteLine($"sleep: {sleep}");}
                     }
                 }
 
@@ -97,18 +94,14 @@ namespace GameHost1.Universes.Evance.Milestone3
             {
                 StartDelay = 0,
                 Interval = world_frame,
-                EventHandlersCount = 100,
+                EventHandlersCount = 10,
             });
 
-            //_planet = new Planet(this.Dimation, _time);
             _planet = new Planet(this.Dimation);
 
             _time.TimeElapsingEventHandlers[0].Ready += (sender, timeEventArgs) => _planet.RefreshLastFrameLives();
 
             GenerateLives(init_matrix, init_cell_frame, init_cell_start_frame);
-
-            //// 建立第一份生命快照
-            //_planet.RefreshLastFrameLives();
 
             _alreadyBigBang = true;
 
@@ -133,12 +126,10 @@ namespace GameHost1.Universes.Evance.Milestone3
             });
 
             // 初始化所有的生命
-            //foreach (var p in ArrayHelper.ForEachPos(init_matrix))
             Parallel.ForEach(ArrayHelper.ForEachPos(init_matrix), p =>
             {
                 var lifeSettings = new LifeSettings()
                 {
-                    //Time = this._time,
                     Planet = this._planet,
                     InitCoordinates = p,
                     InitIsAlive = init_matrix[p.x, p.y],
@@ -150,15 +141,12 @@ namespace GameHost1.Universes.Evance.Milestone3
                 };
 
                 var life = new Life(lifeSettings);
-                //lives.Add(life);
 
                 _time.TimeElapsingEventHandlers[livesCount % _time.EventHandlersCount].Elapsing += (sender, timeEventArgs) => life.TryEvolve(sender, timeEventArgs);
 
-                //_planet.TryPutLife(life);
                 queue.Add(life);
 
                 livesCount++;
-                //}
             });
 
             queue.CompleteAdding();

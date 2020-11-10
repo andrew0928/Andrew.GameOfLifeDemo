@@ -2,8 +2,6 @@
 {
     public class LifeSettings
     {
-        public ITimeElapsingEvent Time { get; set; }
-
         public IPlanetReadOnly Planet { get; set; }
 
         /// <summary>

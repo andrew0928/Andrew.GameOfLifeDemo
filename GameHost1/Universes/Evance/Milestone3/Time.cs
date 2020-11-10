@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
 namespace GameHost1.Universes.Evance.Milestone3
 {
-    //public class Time : ITime, IDisposable
     public class Time : IDisposable
     {
         private TimeSettings _timeSettings;
@@ -17,42 +15,14 @@ namespace GameHost1.Universes.Evance.Milestone3
         private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         private bool isDisposed;
 
-        //public event EventHandler<TimeEventArgs> Ready;
-        //public event EventHandler<TimeEventArgs> Elapsing;
-        //public event EventHandler<TimeEventArgs> Elapsing1;
-        //public event EventHandler<TimeEventArgs> Elapsed;
-
-
-        private int _elapsingEventCount = 0;
-
         private BufferBlock<TimeEventArgs> _bufferBlock;
         private BroadcastBlock<TimeEventArgs> _broadcaster;
         private List<ActionBlock<TimeEventArgs>> _actionBlocks = new List<ActionBlock<TimeEventArgs>>();
         private CountdownEvent _countdownEvent;
 
         public int EventHandlersCount { get; private set; }
+
         public ConcurrentDictionary<int, TimeElapsingEvent> TimeElapsingEventHandlers { get; private set; } = new ConcurrentDictionary<int, TimeElapsingEvent>();
-
-        //private bool TryEvolve(object sender, TimeEventArgs timeEventArgs)
-        //{
-        //    return true;
-        //}
-
-        //public void AddElapsingEvent(Func<object, TimeEventArgs, bool> func)
-        //{
-        //    var currentelapsingEventCount = Interlocked.Increment(ref _elapsingEventCount);
-
-        //    if (currentelapsingEventCount % 2 == 0)
-        //    {
-        //        Elapsing += (sender, eventArgs) => func(sender, eventArgs);
-        //    }
-        //    else
-        //    {
-        //        Elapsing1 += (sender, eventArgs) => func(sender, eventArgs);
-        //    }
-        //}
-
-
 
         public TimeSpan CurrentTime { get; private set; } = new TimeSpan();
 
@@ -109,9 +79,6 @@ namespace GameHost1.Universes.Evance.Milestone3
             _countdownEvent.Reset();
 
             _bufferBlock.Post(timeEventArgs);
-            //_bufferBlock.Complete();
-
-            //Task.WaitAll(_actionBlocks.Select(a => a.Completion).ToArray());
 
             _countdownEvent.Wait();
 
@@ -137,7 +104,6 @@ namespace GameHost1.Universes.Evance.Milestone3
                 var actionBlock = new ActionBlock<TimeEventArgs>((timeEventArgs) =>
                 {
                     timeElapingEvent.Elapse(timeEventArgs);
-                    //return Task.CompletedTask;
                     _countdownEvent.Signal();
                 },
                 actionExecutionDataflowBlockOptions);
@@ -148,13 +114,6 @@ namespace GameHost1.Universes.Evance.Milestone3
 
                 _actionBlocks.Add(actionBlock);
             }
-
-            //_bufferBlock.Completion.ContinueWith(t => _broadcaster.Complete());
-
-            //_broadcaster.Completion.ContinueWith(t =>
-            //{
-            //    //_actionBlocks.ForEach(x => x.Complete());
-            //});
         }
 
         private void AutoElapse()
