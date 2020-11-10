@@ -149,7 +149,13 @@ namespace GameHost1
                         {
                             Time = (int)frame.time.TotalMilliseconds,
                             Maps = frame.matrix
-                        }) + "\n");
+                        } + "\n",
+                        Formatting.None,
+                        new JsonSerializerSettings
+                        {
+                            ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+                        }
+                    ));
                     //Thread.Sleep(2000);
                     Console.ReadLine();
                 }
