@@ -14,12 +14,8 @@ namespace GameHost1.Tests
             if (source.GetLength(1) != target.GetLength(1)) throw new ArgumentOutOfRangeException();
 
             foreach (var (x, y) in ArrayHelper.ForEachPos<bool>(source))
-            //for (int y = 0; y < source.GetLength(1); y++)
             {
-                //for (int x = 0; x < source.GetLength(0); x++)
-                {
-                    if (source[x, y] != target[x, y].IsAlive) throw new ArgumentException();
-                }
+                if (source[x, y] != target[x, y].IsAlive) throw new ArgumentException();
             }
 
             return;
