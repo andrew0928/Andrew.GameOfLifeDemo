@@ -1,7 +1,10 @@
-﻿using Newtonsoft.Json;
+﻿#define ENABLE_RUNNING_RECORDING
+using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading;
 
 namespace GameHost1
@@ -12,7 +15,10 @@ namespace GameHost1
     {
         public static IWorld CreateWorld(int width, int depth)
         {
-            return new Map(width, depth);
+            //
+            //  ToDo: fill your code HERE.
+            //
+            throw new NotImplementedException();
         }
 
         private static void Init(bool[,] matrix, int[,] frames, int cell_frame = 10, int rate = 20)
@@ -28,57 +34,66 @@ namespace GameHost1
 
         public static void Main(string[] args)
         {
-            //
-            //  Main Program 的設定參數，都集中在這區。
-            //
-            #region world configuration
-            // IWorld 模擬環境的範圍
-            const int width = 50;
-            const int depth = 20;
-
-            // 是否啟用 logging ? 會記錄 init / running 的過程，預設值 false.
-            const bool _enable_running_log = false;
 
             // 是否用 realtime mode 執行模擬?
-            const bool realtime = false;
-
-            // 是否顯示 world 的運行狀況?
-            const bool display = false;
-
-            // 指定 world 刷新一次的週期 (單位: msec)
-            const int  world_frame = 100;
-
-            // 指定世界運行的時間長度 ( realtime mode 下 )。超過會中止模擬的程序。
             TimeSpan until = TimeSpan.FromMinutes(10);
-            #endregion
 
 
-            #region Init the world...
+
+#if (ENABLE_RUNNING_RECORDING)
+            const int width = 5;
+            const int depth = 5;
+            const int world_frame = 100;
+            const bool _enable_running_recording = true;
+            const bool realtime = true;
+            const bool display = true;
 
             IWorld world = CreateWorld(width, depth);
-            bool[,] matrix = new bool[width, depth];
-            //{
-            //    { false, false, false, false, false },
-            //    { false, true , true , true , false },
-            //    { false, true , true , true , false },
-            //    { false, true , true , true , false },
-            //    { false, false, false, false, false }
-            //};
-            int[,] frames = new int[width, depth];
-            //{
-            //    { 30, 30, 30, 30, 30 },
-            //    { 30, 30, 70, 30, 30 },
-            //    { 30, 70, 70, 70, 30 },
-            //    { 30, 30, 70, 30, 30 },
-            //    { 30, 30, 30, 30, 30 },
-            //};
-            int[,] start_frames = new int[width, depth];
 
+            bool[,] matrix = new bool[width, depth]
+            {
+                { false, false, false, false, false },
+                { false, true , true , true , false },
+                { false, true , true , true , false },
+                { false, true , true , true , false },
+                { false, false, false, false, false }
+            };
+            int[,] frames = new int[width, depth]
+            {
+                { 30, 30, 30, 30, 30 },
+                { 30, 30, 70, 30, 30 },
+                { 30, 70, 70, 70, 30 },
+                { 30, 30, 70, 30, 30 },
+                { 30, 30, 30, 30, 30 },
+            };
+            int[,] start_frames = new int[width, depth]
+            {
+                { 0, 0, 0, 0, 0 },
+                { 0, 0, 0, 0, 0 },
+                { 0, 0, 0, 0, 0 },
+                { 0, 0, 0, 0, 0 },
+                { 0, 0, 0, 0, 0 },
+            };
+
+#else
+            const int width = 50;
+            const int depth = 20;
+            const int world_frame = 100;
+            const bool _enable_running_recording = false;
+            const bool realtime = true;
+            const bool display = true;
+
+            IWorld world = CreateWorld(width, depth);
+
+            bool[,] matrix = new bool[width, depth];
+            int[,] frames = new int[width, depth];
+            int[,] start_frames = new int[width, depth];
             Init(matrix, frames, world_frame, 20);
+#endif
+    
             world.Init(matrix, frames, start_frames, world_frame);
-            world.Init(matrix, frames, start_frames, 200);
             
-            if (_enable_running_log)
+            if (_enable_running_recording)
             {
                 File.Delete("running-settings.json");
                 File.Delete("running-logs.json");
@@ -87,14 +102,12 @@ namespace GameHost1
                     "running-settings.json",
                     JsonConvert.SerializeObject(new
                     {
-                        InitMapFrame = 50,
+                        InitMapFrame = world_frame,
                         InitMap = matrix,
                         InitFrames = frames,
                         InitStarts = start_frames
                     }) + "\n");
             }
-
-            #endregion
 
 
 
@@ -131,7 +144,7 @@ namespace GameHost1
                 Console.WriteLine($"total lives: {live_count}, time frame: {time} / {until}, speed up: {time.TotalMilliseconds / realtime_timer.ElapsedMilliseconds:0.##}X                 ");
 
 
-                if (_enable_running_log)
+                if (_enable_running_recording)
                 {
                     File.AppendAllText(
                         "running-logs.json",
@@ -140,7 +153,8 @@ namespace GameHost1
                             Time = (int)frame.time.TotalMilliseconds,
                             Maps = frame.matrix
                         }) + "\n");
-                    Thread.Sleep(1000);
+                    //Thread.Sleep(2000);
+                    Console.ReadLine();
                 }
             }
         }
