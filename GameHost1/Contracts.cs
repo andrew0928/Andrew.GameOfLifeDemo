@@ -6,7 +6,13 @@ namespace GameHost1
 {
     public interface IWorld
     {
+        public int Width { get; set; }
+        public int Depth { get; set; }
+        public ILife[,] Matrix { get; set; }
+        public int[,] CellFrames { get; set; }
+        public int WorldFrame { get; set; }
         public bool Init(bool[,] init_matrix, int[,] init_cell_frame, int[,] init_cell_start_frame, int world_frame);
+
 
         /// <summary>
         /// 
@@ -20,6 +26,12 @@ namespace GameHost1
 
     public interface ILife
     {
+        public Guid Id { get; set; }
+        public bool IsAlive { get; set; }
+        public IList<int> LivesNumToLiveWhenAlive { get; set; }
+        public IList<int> LivesNumToLiveWhenDead { get; set; }
+        public GoogleMaps GoogleMaps { get; set; }
+        public bool GetUpdatedStatus();
         /// <summary>
         /// 細胞演化次數。Milestone3 如果是 0 則會跳過檢查
         /// </summary>
@@ -27,10 +39,7 @@ namespace GameHost1
         {
             get { return 0; }
         }
-        public bool IsAlive { get; }
     }
-
-
 
     public static class ArrayHelper
     {

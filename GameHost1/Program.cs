@@ -15,10 +15,7 @@ namespace GameHost1
     {
         public static IWorld CreateWorld(int width, int depth)
         {
-            //
-            //  ToDo: fill your code HERE.
-            //
-            throw new NotImplementedException();
+            return new World(width, depth);
         }
 
         private static void Init(bool[,] matrix, int[,] frames, int cell_frame = 10, int rate = 20)
@@ -90,9 +87,9 @@ namespace GameHost1
             int[,] start_frames = new int[width, depth];
             Init(matrix, frames, world_frame, 20);
 #endif
-    
+
             world.Init(matrix, frames, start_frames, world_frame);
-            
+
             if (_enable_running_recording)
             {
                 File.Delete("running-settings.json");
@@ -152,7 +149,13 @@ namespace GameHost1
                         {
                             Time = (int)frame.time.TotalMilliseconds,
                             Maps = frame.matrix
-                        }) + "\n");
+                        } + "\n",
+                        Formatting.None,
+                        new JsonSerializerSettings
+                        {
+                            ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+                        }
+                    ));
                     //Thread.Sleep(2000);
                     Console.ReadLine();
                 }
