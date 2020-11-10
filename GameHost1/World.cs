@@ -65,7 +65,6 @@ namespace GameHost1
             var lastWorldFrame = TimeSpan.FromMilliseconds(0);
             var cellFrameSwitchMoments = new Dictionary<int, List<TimeSpan>>();
 
-
             for (TimeSpan i = TimeSpan.FromMilliseconds(0); i <= until; i += TimeSpan.FromMilliseconds(10))
             {
                 Stopwatch realtime_timer = new Stopwatch();
@@ -86,6 +85,9 @@ namespace GameHost1
                     }
                 }
 
+                // 回傳 time == 0 的初始狀態
+                if (i == TimeSpan.FromMilliseconds(0)) yield return (i, Matrix);
+                
                 // 切換世界：按照切換細胞紀錄切換細胞
                 if (i - lastWorldFrame == TimeSpan.FromMilliseconds(WorldFrame))
                 {
