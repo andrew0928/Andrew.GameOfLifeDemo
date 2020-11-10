@@ -95,9 +95,13 @@ namespace GameHost1.Universes.Evance.Milestone3
             {
                 StartDelay = 0,
                 Interval = world_frame,
+                EventHandlersCount = 1000,
             });
 
-            _planet = new Planet(this.Dimation, _time);
+            //_planet = new Planet(this.Dimation, _time);
+            _planet = new Planet(this.Dimation);
+
+            _time.TimeElapsingEventHandlers[0].Ready += (sender, timeEventArgs) => _planet.RefreshLastFrameLives();
 
             GenerateLives(init_matrix, init_cell_frame, init_cell_start_frame);
 
@@ -112,13 +116,14 @@ namespace GameHost1.Universes.Evance.Milestone3
         private List<Life> GenerateLives(bool[,] init_matrix, int[,] init_cell_frame, int[,] init_cell_start_frame)
         {
             var lives = new List<Life>();
+            int livesCount = 0;
 
             // 初始化所有的生命
             foreach (var p in ArrayHelper.ForEachPos(init_matrix))
             {
                 var lifeSettings = new LifeSettings()
                 {
-                    Time = this._time,
+                    //Time = this._time,
                     Planet = this._planet,
                     InitCoordinates = p,
                     InitIsAlive = init_matrix[p.x, p.y],
@@ -130,9 +135,14 @@ namespace GameHost1.Universes.Evance.Milestone3
                 };
 
                 var life = new Life(lifeSettings);
-                lives.Add(life);
+                //lives.Add(life);
+
+                // TODO: 加上 time event
+                _time.TimeElapsingEventHandlers[livesCount % _time.EventHandlersCount].Elapsing += (sender, timeEventArgs) => life.TryEvolve(sender, timeEventArgs);
 
                 _planet.TryPutLife(life);
+
+                livesCount++;
             }
 
             return lives;

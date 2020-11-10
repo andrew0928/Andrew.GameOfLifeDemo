@@ -18,5 +18,7 @@ namespace GameHost1.Universes.Evance.Milestone3
         /// 每次行動的間隔時間 (msec)
         /// </summary>
         public int Interval { get; set; }
+
+        public int EventHandlersCount { get; set; } = 1;
     }
 }
