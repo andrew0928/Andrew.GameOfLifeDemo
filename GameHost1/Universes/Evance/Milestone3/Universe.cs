@@ -67,14 +67,17 @@ namespace GameHost1.Universes.Evance.Milestone3
 
                 _time.ElapseOnce();
 
-                _planet.RefreshLastFrameLives();
+                //_planet.RefreshLastFrameLives();
 
                 if (realtime)
                 {
                     var diff = DateTime.Now.Subtract(startTimeSpan);
-                    var sleep = _time.Interval.Subtract(diff);
-                    Thread.Sleep(sleep);
-                    //Console.WriteLine($"sleep: {sleep}");
+                    if (_time.Interval > diff)
+                    {
+                        var sleep = _time.Interval.Subtract(diff);
+                        Thread.Sleep(sleep);
+                        //Console.WriteLine($"sleep: {sleep}");}
+                    }
                 }
 
                 yield return (_time.CurrentTime, _planet.LastFrameLives);
@@ -94,12 +97,12 @@ namespace GameHost1.Universes.Evance.Milestone3
                 Interval = world_frame,
             });
 
-            _planet = new Planet(this.Dimation);
+            _planet = new Planet(this.Dimation, _time);
 
             GenerateLives(init_matrix, init_cell_frame, init_cell_start_frame);
 
-            // 建立第一份生命快照
-            _planet.RefreshLastFrameLives();
+            //// 建立第一份生命快照
+            //_planet.RefreshLastFrameLives();
 
             _alreadyBigBang = true;
 
@@ -127,6 +130,7 @@ namespace GameHost1.Universes.Evance.Milestone3
                 };
 
                 var life = new Life(lifeSettings);
+                lives.Add(life);
 
                 _planet.TryPutLife(life);
             }

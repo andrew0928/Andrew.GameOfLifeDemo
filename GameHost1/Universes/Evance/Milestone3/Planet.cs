@@ -5,6 +5,7 @@ namespace GameHost1.Universes.Evance.Milestone3
 {
     public class Planet : IPlanet
     {
+        private readonly ITimeReadOnly _time;
         private readonly Life[,] _livesMatrix;
 
         public (int XAsis, int YAsis) MaxCoordinates { get; }
@@ -14,7 +15,7 @@ namespace GameHost1.Universes.Evance.Milestone3
         /// </summary>
         public LifeWithAppearanceOnly[,] LastFrameLives { get; private set; }
 
-        public Planet((int XAsis, int YAsis) maxCoordinates)
+        public Planet((int XAsis, int YAsis) maxCoordinates, ITimeReadOnly time)
         {
             #region 檢查傳入參數
 
@@ -27,6 +28,10 @@ namespace GameHost1.Universes.Evance.Milestone3
 
             _livesMatrix = new Life[this.MaxCoordinates.XAsis, this.MaxCoordinates.YAsis];
             LastFrameLives = new LifeWithAppearanceOnly[this.MaxCoordinates.XAsis, this.MaxCoordinates.YAsis];
+
+            _time = time;
+            //_time.Elapsed += (sender, eventArgs) => this.RefreshLastFrameLives();
+            _time.Ready += (sender, eventArgs) => this.RefreshLastFrameLives();
         }
 
         public virtual bool TryPutLife(ILife iLife)

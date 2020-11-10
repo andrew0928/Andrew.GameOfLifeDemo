@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 
 namespace GameHost1.Universes.Evance.Milestone3
 {
@@ -7,15 +8,17 @@ namespace GameHost1.Universes.Evance.Milestone3
         private readonly ITimeReadOnly _time;
         private readonly IPlanetReadOnly _planet;
         private readonly LifeSettings _lifeSettings;
-
+        private readonly TimeSpan _intervalTimespan;
         /// <summary>
         /// 下一次有效進化時間 (在同一個時間區間內，進化一次跟進化多次的意義相同)
         /// </summary>
-        private TimeSpan _leftTimeForEvolving;
-        private readonly TimeSpan _intervalTimespan;
+        private TimeSpan _nextEvolvingTime;
+        private int _generation = 0;
         private bool isDisposed;
 
         public bool IsAlive { get; private set; }
+
+        public int Generation => _generation;
 
         public (int X, int Y) Coordinates { get; }
 
@@ -37,10 +40,11 @@ namespace GameHost1.Universes.Evance.Milestone3
 
             Coordinates = _lifeSettings.InitCoordinates;
 
-            // 初始化下一次演化的時間，即為第一次演化的時間
-            _leftTimeForEvolving = TimeSpan.FromMilliseconds(_lifeSettings.TimeSettings.StartDelay);
-
             _intervalTimespan = TimeSpan.FromMilliseconds(_lifeSettings.TimeSettings.Interval);
+
+            // 初始化下一次演化的時間，即為第一次演化的時間
+            //_nextEvolvingTime = _intervalTimespan + TimeSpan.FromMilliseconds(_lifeSettings.TimeSettings.StartDelay);
+            _nextEvolvingTime = TimeSpan.FromMilliseconds(_lifeSettings.TimeSettings.StartDelay);
 
             _time.Elapsing += (sender, eventArgs) => this.TryEvolve(sender, eventArgs);
         }
@@ -80,18 +84,29 @@ namespace GameHost1.Universes.Evance.Milestone3
         protected virtual bool TryEvolve(object sender, TimeEventArgs timeEventArgs)
         {
             // 先看看演化時間到了沒
-            if (timeEventArgs.CurrentTime >= this._leftTimeForEvolving)
+            if (timeEventArgs.CurrentTime >= this._nextEvolvingTime)
             {
-                // 演化
+                // 進行有效演化
                 var aroundAliveLivesCount = _planet.GetAroundAliveLivesCount(this.Coordinates);
 
                 this.IsAlive = CanAdaptToEnvironment(aroundAliveLivesCount);
 
-                // 計算下一次有效演化時間
+                Interlocked.Increment(ref _generation);
+
+                // 進行假演化並計算下一次有效演化時間
                 do
                 {
-                    this._leftTimeForEvolving = this._leftTimeForEvolving.Add(_intervalTimespan);
-                } while (timeEventArgs.NextTime > this._leftTimeForEvolving);
+                    this._nextEvolvingTime = this._nextEvolvingTime.Add(_intervalTimespan);
+                    if (timeEventArgs.CurrentTime >= this._nextEvolvingTime)
+                    {
+                        Interlocked.Increment(ref _generation);
+                    }
+                    else
+                    {
+                        break;
+                    }
+                    //} while (timeEventArgs.NextTime > this._nextEvolvingTime);
+                } while (true);
 
                 return true;
             }

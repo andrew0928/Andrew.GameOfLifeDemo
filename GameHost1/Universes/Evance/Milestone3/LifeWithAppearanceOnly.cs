@@ -7,9 +7,12 @@
     {
         public virtual bool IsAlive { get; }
 
+        public virtual int Generation { get; }
+
         public LifeWithAppearanceOnly(ILife sourceLife)
         {
             this.IsAlive = sourceLife.IsAlive;
+            this.Generation = sourceLife.Generation;
         }
     }
 }
