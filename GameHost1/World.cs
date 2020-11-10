@@ -11,9 +11,10 @@ namespace GameHost1
         public int Width { get; set; }
         public int Depth { get; set; }
         public ILife[,] Matrix { get; set; }
-        public int[,] CellFrame { get; set; }
+        public int[,] CellFrames { get; set; }
         public int WorldFrame { get; set; }
-        public IDictionary<Guid, IList<int>> PositionDict = new Dictionary<Guid, IList<int>>();
+        private IDictionary<Guid, IList<int>> positionDict = new Dictionary<Guid, IList<int>>();
+        private IDictionary<int, List<TimeSpan>> cellFrameSwitchMoments = new Dictionary<int, List<TimeSpan>>();
 
         public World(int width, int depth)
         {
@@ -29,10 +30,10 @@ namespace GameHost1
             {
                 var id = Guid.NewGuid();
                 Matrix[x, y] = new Life(id, init_matrix[x, y], new GoogleMaps(this, id));
-                PositionDict.Add(id, new List<int> { x, y });
+                positionDict.Add(id, new List<int> { x, y });
             }
 
-            CellFrame = init_cell_frame;
+            CellFrames = init_cell_frame;
             WorldFrame = world_frame;
             return true;
         }
@@ -41,8 +42,8 @@ namespace GameHost1
         public ILife[,] GetNearbyData(Guid cellId)
         {
             if (Matrix == null) throw new ArgumentException();
-            if (!PositionDict.ContainsKey(cellId)) throw new ArgumentException("Cell wasn't documented in dict.");
-            var position = PositionDict[cellId];
+            if (!positionDict.ContainsKey(cellId)) throw new ArgumentException("Cell wasn't documented in dict.");
+            var position = positionDict[cellId];
             var r = position[0];
             var c = position[1];
 
@@ -63,7 +64,6 @@ namespace GameHost1
         public IEnumerable<(TimeSpan time, ILife[,] matrix)> Running(TimeSpan until, bool realtime = false)
         {
             var lastWorldFrame = TimeSpan.FromMilliseconds(0);
-            var cellFrameSwitchMoments = new Dictionary<int, List<TimeSpan>>();
 
             for (TimeSpan i = TimeSpan.FromMilliseconds(0); i <= until; i += TimeSpan.FromMilliseconds(10))
             {
@@ -73,7 +73,7 @@ namespace GameHost1
                 // 新增切換細胞生死狀態的一筆紀錄 (但還沒切換)
                 foreach (var (x, y) in ArrayHelper.ForEachPos<ILife>(Matrix))
                 {
-                    var cellFrame = CellFrame[x, y];
+                    var cellFrame = CellFrames[x, y];
                     var lastCellFrame = cellFrameSwitchMoments.ContainsKey(cellFrame) ? cellFrameSwitchMoments[cellFrame].Max() : TimeSpan.FromMilliseconds(0);
                     if (i - lastCellFrame == TimeSpan.FromMilliseconds(cellFrame))
                     {
@@ -87,14 +87,14 @@ namespace GameHost1
 
                 // 回傳 time == 0 的初始狀態
                 if (i == TimeSpan.FromMilliseconds(0)) yield return (i, Matrix);
-                
+
                 // 切換世界：按照切換細胞紀錄切換細胞
                 if (i - lastWorldFrame == TimeSpan.FromMilliseconds(WorldFrame))
                 {
                     var updatedMatrix = new ILife[Width, Depth];
                     foreach (var (x, y) in ArrayHelper.ForEachPos<ILife>(Matrix))
                     {
-                        var cellFrame = CellFrame[x, y];
+                        var cellFrame = CellFrames[x, y];
                         if (!cellFrameSwitchMoments.ContainsKey(cellFrame))
                         {
                             // 還不需要切換生死狀態
