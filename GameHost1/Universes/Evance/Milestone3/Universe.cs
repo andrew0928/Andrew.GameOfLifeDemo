@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace GameHost1.Universes.Evance.Milestone3
 {
@@ -95,7 +97,7 @@ namespace GameHost1.Universes.Evance.Milestone3
             {
                 StartDelay = 0,
                 Interval = world_frame,
-                EventHandlersCount = 1000,
+                EventHandlersCount = 100,
             });
 
             //_planet = new Planet(this.Dimation, _time);
@@ -118,8 +120,21 @@ namespace GameHost1.Universes.Evance.Milestone3
             var lives = new List<Life>();
             int livesCount = 0;
 
+            var queue = new BlockingCollection<Life>();
+            var addedAllLivesSignal = new AutoResetEvent(false);
+            Task.Run(() =>
+            {
+                foreach (var item in queue.GetConsumingEnumerable())
+                {
+                    _planet.TryPutLife(item);
+                }
+
+                addedAllLivesSignal.Set();
+            });
+
             // 初始化所有的生命
-            foreach (var p in ArrayHelper.ForEachPos(init_matrix))
+            //foreach (var p in ArrayHelper.ForEachPos(init_matrix))
+            Parallel.ForEach(ArrayHelper.ForEachPos(init_matrix), p =>
             {
                 var lifeSettings = new LifeSettings()
                 {
@@ -137,13 +152,17 @@ namespace GameHost1.Universes.Evance.Milestone3
                 var life = new Life(lifeSettings);
                 //lives.Add(life);
 
-                // TODO: 加上 time event
                 _time.TimeElapsingEventHandlers[livesCount % _time.EventHandlersCount].Elapsing += (sender, timeEventArgs) => life.TryEvolve(sender, timeEventArgs);
 
-                _planet.TryPutLife(life);
+                //_planet.TryPutLife(life);
+                queue.Add(life);
 
                 livesCount++;
-            }
+                //}
+            });
+
+            queue.CompleteAdding();
+            addedAllLivesSignal.WaitOne();
 
             return lives;
         }
