@@ -2,11 +2,13 @@
 {
     public class Cell : ILife
     {
+        public int Generation { get; set; } = 0;
         public bool IsAlive { get; set; }
+
         public Cell[,] Partners { get; set; }
 
         private int Interval { get; set; }
-        private bool IsActive { get; set; }
+        private bool IsActive { get; set; } = false;
         private int ActiveTime { get; set; }
 
         public Cell() {}
@@ -16,7 +18,6 @@
             this.IsAlive = isAlive;
 
             this.Interval = interval;
-            this.IsActive = ActiveTime == 0;
             this.ActiveTime = activeTime;
         }
 
@@ -54,15 +55,18 @@
 
         private void Evolve() 
         {
-            if (Partners != null)
+            if (Partners != null) 
+            {
                 this.IsAlive = CheckIsAlive();
+                Generation++;
+            }
         }
 
         public void PushToNextFrame(int index)
         {
             if (IsActive)
             {
-                if (index % Interval == 0)
+                if ((index - ActiveTime) % Interval == 0)
                     Evolve();
             }
             else

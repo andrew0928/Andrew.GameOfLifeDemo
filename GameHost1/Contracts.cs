@@ -23,10 +23,7 @@ namespace GameHost1
         /// <summary>
         /// 細胞演化次數。Milestone3 如果是 0 則會跳過檢查
         /// </summary>
-        public int Generation
-        {
-            get { return 0; }
-        }
+        public int Generation { get; }
         public bool IsAlive { get; }
     }
 

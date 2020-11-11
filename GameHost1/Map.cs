@@ -83,19 +83,17 @@ namespace GameHost1
 
                 if (elapsed >= until) break;
 
-                if(index != 0 && index % this.Interval == 0) 
-                {
-                    yield return Snapshot(elapsed);
-                }
-
-                if(realtime)
-                    Thread.Sleep(ConfigProvider.MinimumFrame);
-
-                clock.Lap();
-
                 for (int y = 0; y < this.Height; y++)
                     for (int x = 0; x < this.Width; x++)
                         Matrix[x, y].PushToNextFrame(index);
+
+                if (index != 0 && index % this.Interval == 0) 
+                    yield return Snapshot(elapsed);
+
+                if(realtime)
+                    Thread.Sleep(ConfigProvider.MinimumFrame);
+                
+                clock.Lap();
             }
         }
 
