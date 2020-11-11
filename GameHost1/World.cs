@@ -67,6 +67,12 @@ namespace GameHost1
 
             var cellFrameSwitchMoments = new Dictionary<int, TimeSpan>();
 
+            var cellFramesHashSet = new HashSet<int>();
+            foreach (var (x, y) in ArrayHelper.ForEachPos<ILife>(Matrix))
+            {
+                cellFramesHashSet.Add(CellFrames[x, y]);
+            }
+
             for (TimeSpan i = TimeSpan.FromMilliseconds(0); i <= until; i += TimeSpan.FromMilliseconds(1))
             {
 
@@ -78,12 +84,11 @@ namespace GameHost1
                 }
 
                 // 新增切換細胞生死狀態的一筆紀錄
-                foreach (var (x, y) in ArrayHelper.ForEachPos<ILife>(Matrix))
+                foreach (var h in cellFramesHashSet)
                 {
-                    // TODO: 可以怎麼簡化成每種 frame 的細胞加一次即可?
-                    if (i.TotalMilliseconds % CellFrames[x, y] == 0)
+                    if (i.TotalMilliseconds % h == 0)
                     {
-                        cellFrameSwitchMoments[CellFrames[x, y]] = i; // 10, 20, 30..
+                        cellFrameSwitchMoments[h] = i; // 10, 20, 30..
                     }
                 }
 
@@ -93,15 +98,18 @@ namespace GameHost1
                     var updatedMatrix = new ILife[Width, Depth];
                     foreach (var (x, y) in ArrayHelper.ForEachPos<ILife>(Matrix))
                     {
-                        updatedMatrix[x, y] = Matrix[x, y];
-
-                        var momentToBeSwitched = cellFrameSwitchMoments[CellFrames[x, y]];
-                        var lastWorldFrame = i - TimeSpan.FromMilliseconds(WorldFrame);
-                        if (momentToBeSwitched > lastWorldFrame && momentToBeSwitched <= i)
+                        if (cellFrameSwitchMoments.ContainsKey(CellFrames[x, y]))
                         {
-                            var updatedStatus = Matrix[x, y].GetUpdatedStatus();
-                            updatedMatrix[x, y] = new Life(Matrix[x, y].Id, updatedStatus, Matrix[x, y].GoogleMaps);
+                            var momentToBeSwitched = cellFrameSwitchMoments[CellFrames[x, y]];
+                            var lastWorldFrame = i - TimeSpan.FromMilliseconds(WorldFrame);
+                            if (momentToBeSwitched > lastWorldFrame && momentToBeSwitched <= i)
+                            {
+                                var updatedStatus = Matrix[x, y].GetUpdatedStatus();
+                                updatedMatrix[x, y] = new Life(Matrix[x, y].Id, updatedStatus, Matrix[x, y].GoogleMaps);
+                                continue;
+                            }
                         }
+                        updatedMatrix[x, y] = Matrix[x, y];
                     }
                     Matrix = updatedMatrix;
                     yield return (i, updatedMatrix);
