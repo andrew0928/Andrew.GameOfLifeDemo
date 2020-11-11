@@ -13,8 +13,7 @@ namespace GameHost1
         public ILife[,] Matrix { get; set; }
         public int[,] CellFrames { get; set; }
         public int WorldFrame { get; set; }
-        private IDictionary<Guid, IList<int>> positionDict = new Dictionary<Guid, IList<int>>();
-        private IDictionary<int, List<TimeSpan>> cellFrameSwitchMoments = new Dictionary<int, List<TimeSpan>>();
+        public IDictionary<Guid, IList<int>> PositionDict = new Dictionary<Guid, IList<int>>();
 
         public World(int width, int depth)
         {
@@ -30,7 +29,7 @@ namespace GameHost1
             {
                 var id = Guid.NewGuid();
                 Matrix[x, y] = new Life(id, init_matrix[x, y], new GoogleMaps(this, id));
-                positionDict.Add(id, new List<int> { x, y });
+                PositionDict.Add(id, new List<int> { x, y });
             }
 
             CellFrames = init_cell_frame;
@@ -42,8 +41,8 @@ namespace GameHost1
         public ILife[,] GetNearbyData(Guid cellId)
         {
             if (Matrix == null) throw new ArgumentException();
-            if (!positionDict.ContainsKey(cellId)) throw new ArgumentException("Cell wasn't documented in dict.");
-            var position = positionDict[cellId];
+            if (!PositionDict.ContainsKey(cellId)) throw new ArgumentException("Cell wasn't documented in dict.");
+            var position = PositionDict[cellId];
             var r = position[0];
             var c = position[1];
 
@@ -63,69 +62,55 @@ namespace GameHost1
 
         public IEnumerable<(TimeSpan time, ILife[,] matrix)> Running(TimeSpan until, bool realtime = false)
         {
-            var lastWorldFrame = TimeSpan.FromMilliseconds(0);
+            Stopwatch realtime_timer = new Stopwatch();
+            realtime_timer.Restart();
 
-            for (TimeSpan i = TimeSpan.FromMilliseconds(0); i <= until; i += TimeSpan.FromMilliseconds(10))
+            var cellFrameSwitchMoments = new Dictionary<int, TimeSpan>();
+
+            for (TimeSpan i = TimeSpan.FromMilliseconds(0); i <= until; i += TimeSpan.FromMilliseconds(1))
             {
-                Stopwatch realtime_timer = new Stopwatch();
-                realtime_timer.Restart();
 
-                // 新增切換細胞生死狀態的一筆紀錄 (但還沒切換)
+                // 回傳 time == 0 的初始狀態
+                if (i == TimeSpan.FromMilliseconds(0))
+                {
+                    yield return (i, Matrix);
+                    continue;
+                }
+
+                // 新增切換細胞生死狀態的一筆紀錄
                 foreach (var (x, y) in ArrayHelper.ForEachPos<ILife>(Matrix))
                 {
-                    var cellFrame = CellFrames[x, y];
-                    var lastCellFrame = cellFrameSwitchMoments.ContainsKey(cellFrame) ? cellFrameSwitchMoments[cellFrame].Max() : TimeSpan.FromMilliseconds(0);
-                    if (i - lastCellFrame == TimeSpan.FromMilliseconds(cellFrame))
+                    // TODO: 可以怎麼簡化成每種 frame 的細胞加一次即可?
+                    if (i.TotalMilliseconds % CellFrames[x, y] == 0)
                     {
-                        if (!cellFrameSwitchMoments.ContainsKey(cellFrame))
-                        {
-                            cellFrameSwitchMoments[cellFrame] = new List<TimeSpan>();
-                        }
-                        cellFrameSwitchMoments[cellFrame].Add(i); // 10, 20, 30..
+                        cellFrameSwitchMoments[CellFrames[x, y]] = i; // 10, 20, 30..
                     }
                 }
 
-                // 回傳 time == 0 的初始狀態
-                if (i == TimeSpan.FromMilliseconds(0)) yield return (i, Matrix);
-
                 // 切換世界：按照切換細胞紀錄切換細胞
-                if (i - lastWorldFrame == TimeSpan.FromMilliseconds(WorldFrame))
+                if (i.TotalMilliseconds % WorldFrame == 0)
                 {
                     var updatedMatrix = new ILife[Width, Depth];
                     foreach (var (x, y) in ArrayHelper.ForEachPos<ILife>(Matrix))
                     {
-                        var cellFrame = CellFrames[x, y];
-                        if (!cellFrameSwitchMoments.ContainsKey(cellFrame))
-                        {
-                            // 還不需要切換生死狀態
-                            updatedMatrix[x, y] = Matrix[x, y];
-                            continue;
-                        }
+                        updatedMatrix[x, y] = Matrix[x, y];
 
-
-                        List<TimeSpan> moments = cellFrameSwitchMoments[cellFrame];
-                        var currentFrame = i;
-                        // 從 lastFrame 到 currentFrame 如果細胞有動靜再更新
-                        if (moments.Find(x => x > lastWorldFrame && x <= currentFrame) != null)
+                        var momentToBeSwitched = cellFrameSwitchMoments[CellFrames[x, y]];
+                        var lastWorldFrame = i - TimeSpan.FromMilliseconds(WorldFrame);
+                        if (momentToBeSwitched > lastWorldFrame && momentToBeSwitched <= i)
                         {
                             var updatedStatus = Matrix[x, y].GetUpdatedStatus();
                             updatedMatrix[x, y] = new Life(Matrix[x, y].Id, updatedStatus, Matrix[x, y].GoogleMaps);
                         }
-                        else
-                        {
-                            // 還不需要切換生死狀態
-                            updatedMatrix[x, y] = Matrix[x, y];
-                        }
                     }
                     Matrix = updatedMatrix;
                     yield return (i, updatedMatrix);
-                    lastWorldFrame = i;
                 }
+            }
 
-                if (realtime == true && realtime_timer.ElapsedMilliseconds < 10)
-                {
-                    Thread.Sleep((int)(10 - realtime_timer.ElapsedMilliseconds));
-                }
+            if (realtime == true && realtime_timer.ElapsedMilliseconds < 10)
+            {
+                Thread.Sleep((int)(10 - realtime_timer.ElapsedMilliseconds));
             }
         }
     }
