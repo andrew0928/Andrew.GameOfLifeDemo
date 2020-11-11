@@ -128,6 +128,8 @@ namespace GameHost1.Universes.Evance.Milestone3
             // 初始化所有的生命
             Parallel.ForEach(ArrayHelper.ForEachPos(init_matrix), p =>
             {
+                var currentLifeSeq = Interlocked.Increment(ref livesCount);
+
                 var lifeSettings = new LifeSettings()
                 {
                     Planet = this._planet,
@@ -142,11 +144,12 @@ namespace GameHost1.Universes.Evance.Milestone3
 
                 var life = new Life(lifeSettings);
 
-                _time.TimeElapsingEventHandlers[livesCount % _time.EventHandlersCount].Elapsing += (sender, timeEventArgs) => life.TryEvolve(sender, timeEventArgs);
+                //_time.TimeElapsingEventHandlers[livesCount % _time.EventHandlersCount].Elapsing += (sender, timeEventArgs) => life.TryEvolve(sender, timeEventArgs);
+                _time.TimeElapsingEventHandlers[currentLifeSeq % _time.EventHandlersCount].Elapsing += (sender, timeEventArgs) => life.TryEvolve(sender, timeEventArgs);
 
                 queue.Add(life);
 
-                livesCount++;
+                //livesCount++;
             });
 
             queue.CompleteAdding();

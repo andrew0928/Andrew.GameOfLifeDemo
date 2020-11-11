@@ -16,9 +16,15 @@ namespace GameHost1.Universes.Evance.Milestone3
         private bool isDisposed;
 
         private BufferBlock<TimeEventArgs> _bufferBlock;
+        private TransformBlock<TimeEventArgs, TimeEventArgs> _timeReadyTransformBlock;
         private BroadcastBlock<TimeEventArgs> _broadcaster;
-        private List<ActionBlock<TimeEventArgs>> _actionBlocks = new List<ActionBlock<TimeEventArgs>>();
-        private CountdownEvent _countdownEvent;
+        private List<TransformBlock<TimeEventArgs, TimeEventArgs>> _timeElapingTransformBlocks = new List<TransformBlock<TimeEventArgs, TimeEventArgs>>();
+        private BatchBlock<TimeEventArgs> _timeElapingFinishedBatchBlock;
+        private ActionBlock<TimeEventArgs[]> _timeElapsedActionBlock;
+
+        //private int finishedElapingCount = 0;
+
+        private AutoResetEvent _completeAllTimeEventsSignal = new AutoResetEvent(false);
 
         public int EventHandlersCount { get; private set; }
 
@@ -47,8 +53,6 @@ namespace GameHost1.Universes.Evance.Milestone3
 
             EventHandlersCount = _timeSettings.EventHandlersCount;
 
-            _countdownEvent = new CountdownEvent(EventHandlersCount);
-
             Initialize();
 
             this.AutoElapse();
@@ -76,23 +80,31 @@ namespace GameHost1.Universes.Evance.Milestone3
                 NextTime = this.CurrentTime.Add(Interval),
             };
 
-            _countdownEvent.Reset();
+            //finishedElapingCount = 0;
 
             _bufferBlock.Post(timeEventArgs);
 
-            _countdownEvent.Wait();
+            _completeAllTimeEventsSignal.WaitOne();
 
             this.CurrentTime = this.CurrentTime.Add(Interval);
         }
 
         private void Initialize()
         {
+            #region create blocks
+
             _bufferBlock = new BufferBlock<TimeEventArgs>(new DataflowBlockOptions() { BoundedCapacity = 1 });
+
+            _timeReadyTransformBlock = new TransformBlock<TimeEventArgs, TimeEventArgs>(timeEventArgs =>
+            {
+                TimeElapsingEventHandlers[0].OnReady(timeEventArgs);
+
+                Console.WriteLine("finished _timeReadyTransformBlock");
+
+                return timeEventArgs;
+            });
+
             _broadcaster = new BroadcastBlock<TimeEventArgs>(timeEventArgs => timeEventArgs);
-
-            var dataflowLinkOptions = new DataflowLinkOptions() { PropagateCompletion = true };
-
-            _bufferBlock.LinkTo(_broadcaster, dataflowLinkOptions);
 
             var actionExecutionDataflowBlockOptions = new ExecutionDataflowBlockOptions() { MaxDegreeOfParallelism = 1 };
 
@@ -101,19 +113,71 @@ namespace GameHost1.Universes.Evance.Milestone3
                 var timeElapingEvent = new TimeElapsingEvent();
                 TimeElapsingEventHandlers[i] = timeElapingEvent;
 
-                var actionBlock = new ActionBlock<TimeEventArgs>((timeEventArgs) =>
+                var timeElapsingTransformBlocks = new TransformBlock<TimeEventArgs, TimeEventArgs>((timeEventArgs) =>
                 {
-                    timeElapingEvent.Elapse(timeEventArgs);
-                    _countdownEvent.Signal();
+                    //timeElapingEvent.Elapse(timeEventArgs);
+                    timeElapingEvent.OnElapsing(timeEventArgs);
+
+                    //var qq = Interlocked.Increment(ref finishedElapingCount);
+                    //Console.Write($"\rfinished timeElapsingTransformBlocks: {qq}");
+
+                    //if (qq > this.EventHandlersCount)
+                    //{
+                    //    Console.WriteLine($"{qq} > {this.EventHandlersCount}");
+                    //}
+                    //_countdownEvent.Signal();
+                    return timeEventArgs;
                 },
                 actionExecutionDataflowBlockOptions);
 
-                _broadcaster.LinkTo(
-                    actionBlock,
-                    dataflowLinkOptions);
+                //_broadcaster.LinkTo(
+                //    timeElapsingTransformBlocks,
+                //    dataflowLinkOptions);
 
-                _actionBlocks.Add(actionBlock);
+                _timeElapingTransformBlocks.Add(timeElapsingTransformBlocks);
             }
+
+            _timeElapingFinishedBatchBlock = new BatchBlock<TimeEventArgs>(this.EventHandlersCount, new GroupingDataflowBlockOptions()
+            {
+                //// 在您必須以不可部分完成的方式協調來自多個來源之消耗時，可以使用非窮盡模式。 在 BatchBlock<T> 建構函式的 dataflowBlockOptions 參數中，設定 Greedy 為 False，來指定非窮盡模式。
+                //Greedy = false,
+                // 非貪婪模式似乎有 bug (deadlock) 的情況，這邊的情境用貪婪模式就可以了，可參考 https://stackoverflow.com/questions/29861230/tpl-dataflow-broadcastblock-to-batchblocks
+                Greedy = true,
+            });
+
+            _timeElapsedActionBlock = new ActionBlock<TimeEventArgs[]>(timeEventArgsCollection =>
+            {
+                //try
+                //{
+                TimeElapsingEventHandlers[0].OnElapsed(timeEventArgsCollection[0]);
+
+                //Console.WriteLine();
+                //Console.WriteLine("finished _timeElapsedActionBlock");
+
+                _completeAllTimeEventsSignal.Set();
+                //}
+                //catch (Exception ex)
+                //{
+                //    Console.WriteLine(ex.ToString());
+                //}
+            });
+
+            #endregion
+
+            #region link blocks
+
+            var dataflowLinkOptions = new DataflowLinkOptions() { PropagateCompletion = true };
+
+            _bufferBlock.LinkTo(_timeReadyTransformBlock, dataflowLinkOptions);
+            _timeReadyTransformBlock.LinkTo(_broadcaster, dataflowLinkOptions);
+            _timeElapingTransformBlocks.ForEach(b =>
+            {
+                _broadcaster.LinkTo(b, dataflowLinkOptions);
+                b.LinkTo(_timeElapingFinishedBatchBlock, dataflowLinkOptions);
+            });
+            _timeElapingFinishedBatchBlock.LinkTo(_timeElapsedActionBlock, dataflowLinkOptions);
+
+            #endregion
         }
 
         private void AutoElapse()
@@ -184,17 +248,17 @@ namespace GameHost1.Universes.Evance.Milestone3
             public event EventHandler<TimeEventArgs> Elapsing;
             public event EventHandler<TimeEventArgs> Elapsed;
 
-            protected virtual void OnReady(TimeEventArgs e)
+            internal protected virtual void OnReady(TimeEventArgs e)
             {
                 Ready?.Invoke(this, e);
             }
 
-            protected virtual void OnElapsing(TimeEventArgs e)
+            internal protected virtual void OnElapsing(TimeEventArgs e)
             {
                 Elapsing?.Invoke(this, e);
             }
 
-            protected virtual void OnElapsed(TimeEventArgs e)
+            internal protected virtual void OnElapsed(TimeEventArgs e)
             {
                 Elapsed?.Invoke(this, e);
             }
