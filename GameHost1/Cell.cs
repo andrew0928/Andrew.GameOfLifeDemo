@@ -5,21 +5,19 @@
         public bool IsAlive { get; set; }
         public Cell[,] Partners { get; set; }
 
-        private bool IsActive { get; set; }
         private int Interval { get; set; }
+        private bool IsActive { get; set; }
         private int ActiveTime { get; set; }
-        public Clock Clock { get; set; }
 
         public Cell() {}
 
         public Cell(bool isAlive, int interval, int activeTime)
         {
-            IsAlive = isAlive;
+            this.IsAlive = isAlive;
 
             this.Interval = interval;
-            this.ActiveTime = activeTime;
-            this.Clock = new Clock(LapAction);
             this.IsActive = ActiveTime == 0;
+            this.ActiveTime = activeTime;
         }
 
         /// <summary>
@@ -60,20 +58,17 @@
                 this.IsAlive = CheckIsAlive();
         }
 
-        private void LapAction()
+        public void PushToNextFrame(int index)
         {
             if (IsActive)
             {
-                if (Clock.LapTimes % Interval == 0)
+                if (index % Interval == 0)
                     Evolve();
             }
             else
             {
-                if (Clock.LapTimes == ActiveTime)
-                {
+                if (index == ActiveTime)
                     IsActive = true;
-                    Clock.Reset();
-                }
             }
         }
     }
