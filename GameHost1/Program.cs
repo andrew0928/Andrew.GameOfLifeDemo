@@ -6,23 +6,35 @@ namespace GameHost1
 {
     public class Program
     {
-        
         public static bool TimePassRule(bool[,] area)
         {
-            // TODO: fill your code here
-            return area[1, 1];
+            var value = 0;
+            for (int y = 0; y < area.GetLength(1); y++)
+            {
+                for (int x = 0; x < area.GetLength(0); x++)
+                {
+                    value += area[x, y] ? 1 : 0;
+                }
+            }
+            value -= (area[1, 1] ? 1 : 0);
+            //alive
+            if (area[1, 1])
+            {
+                return (value < 2 || value > 3) ? false : true;
+            }
+            else
+            {
+                return (value == 3) ? true : false;
+            }
         }
-
-
 
         static void Main(string[] args)
         {
             RunGameOfLife();
         }
 
-
         private static void RunGameOfLife()
-        { 
+        {
             bool[,] matrix = new bool[50, 20];
 
             Init(matrix, 20);
@@ -33,7 +45,7 @@ namespace GameHost1
                 Thread.Sleep(200);
                 Console.SetCursorPosition(0, 0);
 
-                for(int y = 0; y < matrix.GetLength(1); y++)
+                for (int y = 0; y < matrix.GetLength(1); y++)
                 {
                     for (int x = 0; x < matrix.GetLength(0); x++)
                     {
@@ -93,8 +105,5 @@ namespace GameHost1
                 }
             }
         }
-
-
-
     }
 }
