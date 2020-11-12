@@ -22,8 +22,6 @@ namespace GameHost1.Universes.Evance.Milestone3
         private BatchBlock<TimeEventArgs> _timeElapingFinishedBatchBlock;
         private ActionBlock<TimeEventArgs[]> _timeElapsedActionBlock;
 
-        //private int finishedElapingCount = 0;
-
         private AutoResetEvent _completeAllTimeEventsSignal = new AutoResetEvent(false);
 
         public int EventHandlersCount { get; private set; }
@@ -80,8 +78,6 @@ namespace GameHost1.Universes.Evance.Milestone3
                 NextTime = this.CurrentTime.Add(Interval),
             };
 
-            //finishedElapingCount = 0;
-
             _bufferBlock.Post(timeEventArgs);
 
             _completeAllTimeEventsSignal.WaitOne();
@@ -99,8 +95,6 @@ namespace GameHost1.Universes.Evance.Milestone3
             {
                 TimeElapsingEventHandlers[0].OnReady(timeEventArgs);
 
-                Console.WriteLine("finished _timeReadyTransformBlock");
-
                 return timeEventArgs;
             });
 
@@ -115,24 +109,11 @@ namespace GameHost1.Universes.Evance.Milestone3
 
                 var timeElapsingTransformBlocks = new TransformBlock<TimeEventArgs, TimeEventArgs>((timeEventArgs) =>
                 {
-                    //timeElapingEvent.Elapse(timeEventArgs);
                     timeElapingEvent.OnElapsing(timeEventArgs);
 
-                    //var qq = Interlocked.Increment(ref finishedElapingCount);
-                    //Console.Write($"\rfinished timeElapsingTransformBlocks: {qq}");
-
-                    //if (qq > this.EventHandlersCount)
-                    //{
-                    //    Console.WriteLine($"{qq} > {this.EventHandlersCount}");
-                    //}
-                    //_countdownEvent.Signal();
                     return timeEventArgs;
                 },
                 actionExecutionDataflowBlockOptions);
-
-                //_broadcaster.LinkTo(
-                //    timeElapsingTransformBlocks,
-                //    dataflowLinkOptions);
 
                 _timeElapingTransformBlocks.Add(timeElapsingTransformBlocks);
             }
@@ -147,19 +128,9 @@ namespace GameHost1.Universes.Evance.Milestone3
 
             _timeElapsedActionBlock = new ActionBlock<TimeEventArgs[]>(timeEventArgsCollection =>
             {
-                //try
-                //{
                 TimeElapsingEventHandlers[0].OnElapsed(timeEventArgsCollection[0]);
 
-                //Console.WriteLine();
-                //Console.WriteLine("finished _timeElapsedActionBlock");
-
                 _completeAllTimeEventsSignal.Set();
-                //}
-                //catch (Exception ex)
-                //{
-                //    Console.WriteLine(ex.ToString());
-                //}
             });
 
             #endregion
