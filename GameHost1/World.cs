@@ -64,6 +64,7 @@ namespace GameHost1
         {
             Stopwatch realtime_timer = new Stopwatch();
             realtime_timer.Restart();
+            var totalMSec = 0;
 
             var cellFrameSwitchMoments = new Dictionary<int, TimeSpan>();
 
@@ -112,14 +113,16 @@ namespace GameHost1
                         updatedMatrix[x, y] = Matrix[x, y];
                     }
                     Matrix = updatedMatrix;
+                    var elapsed = realtime_timer.ElapsedMilliseconds;
+                    if (realtime == true && elapsed < totalMSec)
+                    {
+                        Thread.Sleep((int)(totalMSec - elapsed));
+                    }
                     yield return (i, updatedMatrix);
                 }
+                totalMSec ++;
             }
 
-            if (realtime == true && realtime_timer.ElapsedMilliseconds < 10)
-            {
-                Thread.Sleep((int)(10 - realtime_timer.ElapsedMilliseconds));
-            }
         }
     }
 }
