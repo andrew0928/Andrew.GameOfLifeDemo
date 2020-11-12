@@ -5,16 +5,16 @@ namespace GameHost1
 {
     public class GoogleMaps
     {
-        public World World { get; set; }
-        public Guid CellId { get; set; }
+        private World _world { get; set; }
+        private Guid _cellId { get; set; }
         public GoogleMaps(World world, Guid cellId)
         {
-            World = world;
-            CellId = cellId;
+            _world = world;
+            _cellId = cellId;
         }
         public ILife[,] ShowNearbyView()
         {
-            return World.GetNearbyData(CellId);
+            return _world.GetNearbyData(_cellId);
         }
     }
 }

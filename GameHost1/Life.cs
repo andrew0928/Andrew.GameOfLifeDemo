@@ -5,29 +5,34 @@ namespace GameHost1
 {
     public class Life : ILife
     {
-        public Guid Id { get; set; }
+        private Guid _id { get; set; }
         public bool IsAlive { get; set; }
-        public IList<int> LivesNumToLiveWhenAlive { get; set; } = new List<int>() { 2, 3 };
-        public IList<int> LivesNumToLiveWhenDead { get; set; } = new List<int>() { 3 };
-        public GoogleMaps GoogleMaps { get; set; }
+        private IList<int> _livesNumToLiveWhenAlive { get; set; } = new List<int>() { 2, 3 };
+        private IList<int> _livesNumToLiveWhenDead { get; set; } = new List<int>() { 3 };
+        private GoogleMaps _googleMaps { get; set; }
         public Life(Guid id, bool isAlive, GoogleMaps googleMaps)
         {
-            Id = id;
+            _id = id;
             IsAlive = isAlive;
-            GoogleMaps = googleMaps;
+            _googleMaps = googleMaps;
         }
         public bool GetUpdatedStatus()
         {
-            var cellsAround = GoogleMaps.ShowNearbyView();
+            var cellsAround = _googleMaps.ShowNearbyView();
             var livesAround = 0;
             foreach (var item in cellsAround)
             {
                 if (item == null) continue;
                 if (item.IsAlive == true) livesAround++;
             }
-            if (IsAlive == true && LivesNumToLiveWhenAlive.Contains(livesAround)) return true;
-            if (IsAlive == false && LivesNumToLiveWhenDead.Contains(livesAround)) return true;
+            if (IsAlive == true && _livesNumToLiveWhenAlive.Contains(livesAround)) return true;
+            if (IsAlive == false && _livesNumToLiveWhenDead.Contains(livesAround)) return true;
             return false;
+        }
+
+        public ILife Clone()
+        {
+            return new Life(_id, IsAlive, _googleMaps);
         }
     }
 }
