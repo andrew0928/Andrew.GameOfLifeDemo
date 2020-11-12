@@ -1,6 +1,6 @@
 ﻿namespace GameHost1.Universes.Evance.Milestone3
 {
-    public interface ITime : ITimeReadOnly
+    public interface ITime : ITimeElapsingEvent
     {
         public void Start();
 

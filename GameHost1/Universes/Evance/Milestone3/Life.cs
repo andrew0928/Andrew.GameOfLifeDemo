@@ -5,7 +5,6 @@ namespace GameHost1.Universes.Evance.Milestone3
 {
     public class Life : ILife, IDisposable
     {
-        private readonly ITimeReadOnly _time;
         private readonly IPlanetReadOnly _planet;
         private readonly LifeSettings _lifeSettings;
         private readonly TimeSpan _intervalTimespan;
@@ -26,8 +25,6 @@ namespace GameHost1.Universes.Evance.Milestone3
         {
             #region 檢查傳入參數
 
-            _time = lifeSettings?.Time ?? throw new ArgumentNullException(nameof(LifeSettings.Time));
-
             _planet = lifeSettings?.Planet ?? throw new ArgumentNullException(nameof(LifeSettings.Planet));
 
             _lifeSettings = lifeSettings ?? throw new ArgumentNullException(nameof(lifeSettings));
@@ -43,10 +40,7 @@ namespace GameHost1.Universes.Evance.Milestone3
             _intervalTimespan = TimeSpan.FromMilliseconds(_lifeSettings.TimeSettings.Interval);
 
             // 初始化下一次演化的時間，即為第一次演化的時間
-            //_nextEvolvingTime = _intervalTimespan + TimeSpan.FromMilliseconds(_lifeSettings.TimeSettings.StartDelay);
             _nextEvolvingTime = TimeSpan.FromMilliseconds(_lifeSettings.TimeSettings.StartDelay);
-
-            _time.Elapsing += (sender, eventArgs) => this.TryEvolve(sender, eventArgs);
         }
 
         private void CheckSettings()
@@ -81,7 +75,7 @@ namespace GameHost1.Universes.Evance.Milestone3
         /// <param name="sender"></param>
         /// <param name="timeEventArgs"></param>
         /// <returns>是否有演化</returns>
-        protected virtual bool TryEvolve(object sender, TimeEventArgs timeEventArgs)
+        public virtual bool TryEvolve(object sender, TimeEventArgs timeEventArgs)
         {
             // 先看看演化時間到了沒
             if (timeEventArgs.CurrentTime >= this._nextEvolvingTime)
@@ -105,7 +99,6 @@ namespace GameHost1.Universes.Evance.Milestone3
                     {
                         break;
                     }
-                    //} while (timeEventArgs.NextTime > this._nextEvolvingTime);
                 } while (true);
 
                 return true;
@@ -132,7 +125,7 @@ namespace GameHost1.Universes.Evance.Milestone3
                 if (disposing)
                 {
                     // TODO: 處置受控狀態 (受控物件)
-                    _time.Elapsing -= (sender, eventArgs) => this.TryEvolve(sender, eventArgs);
+                    //_time.Elapsing -= (sender, eventArgs) => this.TryEvolve(sender, eventArgs);
                 }
 
                 // TODO: 釋出非受控資源 (非受控物件) 並覆寫完成項
