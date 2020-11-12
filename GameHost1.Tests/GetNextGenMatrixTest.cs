@@ -91,8 +91,8 @@ namespace GameHost1.Tests
                     "00100",
                     "00000"
                 }
-            )); 
-            
+            ));
+
             Assert.IsTrue(PatternTest(
                 new string[] {
                     "00000",
@@ -280,10 +280,27 @@ namespace GameHost1.Tests
             }
             catch
             {
+                Dump("expected_matrix", expected_matrix);
+                Dump("actual_matrix", actual_matrix);
+
                 return false;
             }
 
             return true;
+        }
+
+        private void Dump(string message, bool[,] matrix)
+        {
+            Console.WriteLine(message);
+            for (int y = 0; y < matrix.GetLength(1); y++)
+            {
+                for (int x = 0; x < matrix.GetLength(0); x++)
+                {
+                    var c = matrix[x, y];
+                    Console.Write(c ? '★' : '☆');
+                }
+                Console.WriteLine();
+            }
         }
 
 
