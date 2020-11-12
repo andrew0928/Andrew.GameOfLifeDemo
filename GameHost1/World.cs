@@ -8,41 +8,43 @@ namespace GameHost1
 {
     public class World : IWorld
     {
-        public int Width { get; set; }
-        public int Depth { get; set; }
-        public ILife[,] Matrix { get; set; }
-        public int[,] CellFrames { get; set; }
-        public int WorldFrame { get; set; }
-        public IDictionary<Guid, IList<int>> PositionDict = new Dictionary<Guid, IList<int>>();
+        private int _width { get; set; }
+        private int _depth { get; set; }
+        private ILife[,] _matrix { get; set; }
+        private int[,] _cellFrames { get; set; }
+        private int _worldFrame { get; set; }
+        private IDictionary<Guid, IList<int>> _positionDict = new Dictionary<Guid, IList<int>>();
+        private HashSet<int> _cellFramesHashSet = new HashSet<int>();
+        private Dictionary<int, TimeSpan> _cellFrameSwitchMoments = new Dictionary<int, TimeSpan>();
 
         public World(int width, int depth)
         {
-            this.Width = width;
-            this.Depth = depth;
+            this._width = width;
+            this._depth = depth;
         }
 
         public bool Init(bool[,] init_matrix, int[,] init_cell_frame, int[,] init_cell_start_frame, int world_frame)
         {
-            if (init_matrix.GetLength(0) != Width || init_matrix.GetLength(1) != Depth) throw new ArgumentOutOfRangeException();
-            Matrix = new ILife[Width, Depth];
-            foreach (var (x, y) in ArrayHelper.ForEachPos<ILife>(Matrix))
+            if (init_matrix.GetLength(0) != _width || init_matrix.GetLength(1) != _depth) throw new ArgumentOutOfRangeException();
+            _matrix = new ILife[_width, _depth];
+            foreach (var (x, y) in ArrayHelper.ForEachPos<ILife>(_matrix))
             {
                 var id = Guid.NewGuid();
-                Matrix[x, y] = new Life(id, init_matrix[x, y], new GoogleMaps(this, id));
-                PositionDict.Add(id, new List<int> { x, y });
+                _matrix[x, y] = new Life(id, init_matrix[x, y], new GoogleMaps(this, id));
+                _positionDict.Add(id, new List<int> { x, y });
             }
 
-            CellFrames = init_cell_frame;
-            WorldFrame = world_frame;
+            _cellFrames = init_cell_frame;
+            _worldFrame = world_frame;
             return true;
         }
 
 
         public ILife[,] GetNearbyData(Guid cellId)
         {
-            if (Matrix == null) throw new ArgumentException();
-            if (!PositionDict.ContainsKey(cellId)) throw new ArgumentException("Cell wasn't documented in dict.");
-            var position = PositionDict[cellId];
+            if (_matrix == null) throw new ArgumentException();
+            if (!_positionDict.ContainsKey(cellId)) throw new ArgumentException("Cell wasn't documented in dict.");
+            var position = _positionDict[cellId];
             var r = position[0];
             var c = position[1];
 
@@ -57,22 +59,55 @@ namespace GameHost1
 
         private ILife TryGetCell(int x, int y)
         {
-            return (x >= 0 && y >= 0 && x < Width && y < Depth) ? Matrix[x, y] : null;
+            return (x >= 0 && y >= 0 && x < _width && y < _depth) ? _matrix[x, y] : null;
+        }
+
+        private void _InitCellFramesHashSet()
+        {
+            foreach (var (x, y) in ArrayHelper.ForEachPos<ILife>(_matrix))
+            {
+                _cellFramesHashSet.Add(_cellFrames[x, y]);
+            }
+        }
+
+        private void _UpdateCellFramesSwitchMoments(TimeSpan ts)
+        {
+            foreach (var h in _cellFramesHashSet)
+            {
+                if (ts.TotalMilliseconds % h == 0) _cellFrameSwitchMoments[h] = ts;
+            }
+        }
+
+        private ILife[,] _GetUpdatedWorld(TimeSpan ts)
+        {
+            var updatedMatrix = new ILife[_width, _depth];
+            foreach (var (x, y) in ArrayHelper.ForEachPos<ILife>(_matrix))
+            {
+                if (_cellFrameSwitchMoments.ContainsKey(_cellFrames[x, y]))
+                {
+                    var momentToBeSwitched = _cellFrameSwitchMoments[_cellFrames[x, y]];
+                    var lastWorldFrame = ts - TimeSpan.FromMilliseconds(_worldFrame);
+                    if (momentToBeSwitched > lastWorldFrame && momentToBeSwitched <= ts)
+                    {
+                        var updatedStatus = _matrix[x, y].GetUpdatedStatus();
+                        var cloned = _matrix[x, y].Clone();
+                        cloned.IsAlive = updatedStatus;
+                        updatedMatrix[x, y] = cloned;
+                        continue;
+                    }
+                }
+                updatedMatrix[x, y] = _matrix[x, y];
+            }
+            return updatedMatrix;
         }
 
         public IEnumerable<(TimeSpan time, ILife[,] matrix)> Running(TimeSpan until, bool realtime = false)
         {
             Stopwatch realtime_timer = new Stopwatch();
-            realtime_timer.Restart();
+            realtime_timer.Start();
             var totalMSec = 0;
 
-            var cellFrameSwitchMoments = new Dictionary<int, TimeSpan>();
-
-            var cellFramesHashSet = new HashSet<int>();
-            foreach (var (x, y) in ArrayHelper.ForEachPos<ILife>(Matrix))
-            {
-                cellFramesHashSet.Add(CellFrames[x, y]);
-            }
+            _InitCellFramesHashSet();
 
             for (TimeSpan i = TimeSpan.FromMilliseconds(0); i <= until; i += TimeSpan.FromMilliseconds(1))
             {
@@ -80,39 +115,16 @@ namespace GameHost1
                 // 回傳 time == 0 的初始狀態
                 if (i == TimeSpan.FromMilliseconds(0))
                 {
-                    yield return (i, Matrix);
+                    yield return (i, _matrix);
                     continue;
                 }
 
-                // 新增切換細胞生死狀態的一筆紀錄
-                foreach (var h in cellFramesHashSet)
-                {
-                    if (i.TotalMilliseconds % h == 0)
-                    {
-                        cellFrameSwitchMoments[h] = i; // 10, 20, 30..
-                    }
-                }
+                _UpdateCellFramesSwitchMoments(i);
 
-                // 切換世界：按照切換細胞紀錄切換細胞
-                if (i.TotalMilliseconds % WorldFrame == 0)
+                if (i.TotalMilliseconds % _worldFrame == 0)
                 {
-                    var updatedMatrix = new ILife[Width, Depth];
-                    foreach (var (x, y) in ArrayHelper.ForEachPos<ILife>(Matrix))
-                    {
-                        if (cellFrameSwitchMoments.ContainsKey(CellFrames[x, y]))
-                        {
-                            var momentToBeSwitched = cellFrameSwitchMoments[CellFrames[x, y]];
-                            var lastWorldFrame = i - TimeSpan.FromMilliseconds(WorldFrame);
-                            if (momentToBeSwitched > lastWorldFrame && momentToBeSwitched <= i)
-                            {
-                                var updatedStatus = Matrix[x, y].GetUpdatedStatus();
-                                updatedMatrix[x, y] = new Life(Matrix[x, y].Id, updatedStatus, Matrix[x, y].GoogleMaps);
-                                continue;
-                            }
-                        }
-                        updatedMatrix[x, y] = Matrix[x, y];
-                    }
-                    Matrix = updatedMatrix;
+                    var updatedMatrix = _GetUpdatedWorld(i);
+                    _matrix = updatedMatrix;
                     var elapsed = realtime_timer.ElapsedMilliseconds;
                     if (realtime == true && elapsed < totalMSec)
                     {
@@ -120,7 +132,7 @@ namespace GameHost1
                     }
                     yield return (i, updatedMatrix);
                 }
-                totalMSec ++;
+                totalMSec++;
             }
 
         }
