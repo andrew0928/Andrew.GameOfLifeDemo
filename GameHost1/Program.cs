@@ -4,21 +4,15 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Threading;
 
 namespace GameHost1
 {
-
-
     public class Program
     {
         public static IWorld CreateWorld(int width, int depth)
         {
-            //
-            //  ToDo: fill your code HERE.
-            //
-            throw new NotImplementedException();
+            return new World(width, depth);
         }
 
         private static void Init(bool[,] matrix, int[,] frames, int cell_frame = 10, int rate = 20)
@@ -74,7 +68,6 @@ namespace GameHost1
                 { 0, 0, 0, 0, 0 },
                 { 0, 0, 0, 0, 0 },
             };
-
 #else
             const int width = 50;
             const int depth = 20;
@@ -90,9 +83,9 @@ namespace GameHost1
             int[,] start_frames = new int[width, depth];
             Init(matrix, frames, world_frame, 20);
 #endif
-    
+
             world.Init(matrix, frames, start_frames, world_frame);
-            
+
             if (_enable_running_recording)
             {
                 File.Delete("running-settings.json");
@@ -153,8 +146,8 @@ namespace GameHost1
                             Time = (int)frame.time.TotalMilliseconds,
                             Maps = frame.matrix
                         }) + "\n");
-                    //Thread.Sleep(2000);
-                    Console.ReadLine();
+                    //Thread.Sleep(1000);
+                    //Console.ReadLine();
                 }
             }
         }
