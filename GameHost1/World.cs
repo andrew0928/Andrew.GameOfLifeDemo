@@ -50,14 +50,14 @@ namespace GameHost1
 
             ILife[,] cells =
             {
-                {TryGetCell(r - 1, c - 1), TryGetCell(r -1, c),TryGetCell(r- 1, c + 1)},
-                {TryGetCell(r, c - 1), null,TryGetCell(r, c + 1)},
-                {TryGetCell(r + 1, c - 1), TryGetCell(r + 1, c),TryGetCell(r + 1, c + 1)},
+                {_TryGetCell(r - 1, c - 1), _TryGetCell(r -1, c),_TryGetCell(r- 1, c + 1)},
+                {_TryGetCell(r, c - 1), null,_TryGetCell(r, c + 1)},
+                {_TryGetCell(r + 1, c - 1), _TryGetCell(r + 1, c),_TryGetCell(r + 1, c + 1)},
             };
             return cells;
         }
 
-        private ILife TryGetCell(int x, int y)
+        private ILife _TryGetCell(int x, int y)
         {
             return (x >= 0 && y >= 0 && x < _width && y < _depth) ? _matrix[x, y] : null;
         }
