@@ -72,25 +72,27 @@ namespace GameHost1
 
         public IEnumerable<(TimeSpan time, ILife[,] matrix)> Running(TimeSpan until, bool realtime = false)
         {
-            Clock clock = new Clock(LapAction);
+            Clock clock = new Clock();
 
             yield return (TimeSpan.Zero, this.Matrix);
 
             while (true)
             {
                 var elapsed = clock.Elapsed;
-                var lapTimes = clock.LapTimes;
+                var index = clock.LapTimes;
 
                 if (elapsed >= until) break;
 
-                if(lapTimes != 0 && lapTimes % this.Interval == 0) 
-                {
+                for (int y = 0; y < this.Height; y++)
+                    for (int x = 0; x < this.Width; x++)
+                        Matrix[x, y].PushToNextFrame(index);
+
+                if (index != 0 && index % this.Interval == 0) 
                     yield return Snapshot(elapsed);
-                }
 
                 if(realtime)
                     Thread.Sleep(ConfigProvider.MinimumFrame);
-
+                
                 clock.Lap();
             }
         }
@@ -98,13 +100,6 @@ namespace GameHost1
         private (TimeSpan time, ILife[,] matrix) Snapshot(TimeSpan elapsed) 
         {
             return (elapsed, this.GetNextGeneration().Matrix);
-        }
-
-        private void LapAction() 
-        {
-            for (int y = 0; y < this.Height; y++)
-                for (int x = 0; x < this.Width; x++)
-                    Matrix[x, y].Clock.Lap();
         }
 
         private void SetPartners()
