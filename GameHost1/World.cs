@@ -1,4 +1,5 @@
 #define ENABLE_RUNNING_RECORDING
+using System.Linq;
 using System;
 using System.Collections.Generic;
 
@@ -10,7 +11,7 @@ namespace GameHost1
         int height;
         ICell[,] matrix = null;
 
-        int worldFrame;
+        int worldFrameDuration;
 
         public World(int width, int height)
         {
@@ -30,7 +31,7 @@ namespace GameHost1
                 }
             }
 
-            this.worldFrame = world_frame;
+            this.worldFrameDuration = world_frame;
 
             return true;
         }
@@ -38,21 +39,23 @@ namespace GameHost1
         public IEnumerable<(TimeSpan time, ILife[,] matrix)> Running(TimeSpan until, bool realtime = true)
         {
             var current = new TimeSpan();
+            var currentFrame = 0;
             //var god = new God();
 
             yield return (current, this.CurrentGeneration());
 
             while (current < until)
             {
-                current = current.Add(TimeSpan.FromMilliseconds(this.worldFrame));
+                current = current.Add(TimeSpan.FromMilliseconds(this.worldFrameDuration));
+                currentFrame = (int)current.TotalMilliseconds;
 
-                foreach (var cell in Traverse())
+                foreach (var cell in Traverse().Where(x => x.IsMyTurn(currentFrame)))
                 {
-                    cell.GetAlongWith(GetNeighbors(cell));
+                    cell.GetAlongWith(GetNeighbors(cell).Where(x => x.IsMyTurn(currentFrame)));
                     //god.Dump($"({cell.PosY}, {cell.PosX})", this.NextGeneration());
                 }
 
-                this.Refresh();
+                this.Refresh(currentFrame);
 
                 yield return (current, this.CurrentGeneration());
             }
@@ -109,9 +112,9 @@ namespace GameHost1
             return output;
         }
 
-        private void Refresh()
+        private void Refresh(int currentFrame)
         {
-            foreach (var cell in Traverse())
+            foreach (var cell in Traverse().Where(x => x.IsNextTurn(currentFrame)))
             {
                 cell.NextGeneration();
             }

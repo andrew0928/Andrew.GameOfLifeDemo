@@ -8,44 +8,50 @@ namespace GameHost1
     {
         public int PosX { get; private set; }
         public int PosY { get; private set; }
-        public bool IsAlive { get; private set; }
-        public bool WillBeAlive { get; private set; }
         public int Generation { get; private set; }
 
         private int FrameDuration;
-        private int StartFrame;
+        private (bool isAlive, int startFrame) LifeState;
+        private (bool isAlive, int startFrame) NextLifeState;
 
         public Cell(int posX, int posY, bool isAlive, int frameDuration, int startFrame)
         {
             this.PosX = posX;
             this.PosY = posY;
-            this.IsAlive = isAlive;
+            this.LifeState = (isAlive, startFrame);
             this.FrameDuration = frameDuration;
-            this.StartFrame = startFrame;
         }
 
-        public void GetAlongWith(IEnumerable<ICell> cells)
+        public bool IsAlive => this.LifeState.isAlive;
+
+        public bool IsMyTurn(int currentFrame) => this.LifeState.startFrame <= currentFrame;
+        public bool IsNextTurn(int nextFrame) => this.NextLifeState.startFrame <= nextFrame;
+
+        public void GetAlongWith(IEnumerable<ICell> neighbors)
         {
             //var ncs = cells.Select(cell => $"({cell.PosX}, {cell.PosY}, {cell.IsAlive})");
-            var value = cells.Select(x => x.IsAlive ? 1 : 0).Sum();
+            var value = neighbors.Select(x => x.IsAlive ? 1 : 0).Sum();
 
-            var beforeIsAlive = this.IsAlive;
+            //var beforeIsAlive = this.IsAlive;
 
+            var nextIsAlive = false;
             if (this.IsAlive)
             {
-                this.WillBeAlive = (value < 2 || value > 3) ? false : true;
+                nextIsAlive = (value < 2 || value > 3) ? false : true;
             }
             else
             {
-                this.WillBeAlive = (value == 3) ? true : false;
+                nextIsAlive = (value == 3) ? true : false;
             }
+
+            this.NextLifeState = (nextIsAlive, this.LifeState.startFrame + this.FrameDuration);
 
             //Console.WriteLine($"CurrentCell: ({this.PosX}, {this.PosY}, {beforeIsAlive} => {this.IsAlive}), Neighbors: {value}, {string.Join(", ", ncs)}");
         }
 
         public void NextGeneration()
         {
-            this.IsAlive = this.WillBeAlive;
+            this.LifeState = this.NextLifeState;
             this.Generation++;
         }
     }

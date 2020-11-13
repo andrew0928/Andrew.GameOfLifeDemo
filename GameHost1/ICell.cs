@@ -8,8 +8,10 @@ namespace GameHost1
         int PosX { get; }
         int PosY { get; }
         bool IsAlive { get; }
-        bool WillBeAlive { get; }
         int Generation { get; }
+
+        bool IsMyTurn(int currentFrame);
+        bool IsNextTurn(int currentFrame);
         void NextGeneration();
         void GetAlongWith(IEnumerable<ICell> cells);
     }
