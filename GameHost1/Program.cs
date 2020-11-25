@@ -1,16 +1,52 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 
 namespace GameHost1
 {
     public class Program
     {
+        /// <summary>
+        /// 周遭有幾個存活細胞可維持存活
+        /// </summary>
+        private static readonly int[] KeepAliveCount = {2, 3};
+        
+        /// <summary>
+        /// 周遭有幾個存活細胞可重生
+        /// </summary>
+        private const int RebornCount = 3;
+        
+        /// <summary>
+        /// 是否存活
+        /// </summary>
+        /// <param name="area"></param>
+        /// <returns></returns>
+        private static bool IsAlive(bool[,] area) => area[1, 1];
+
+        /// <summary>
+        /// 取得周遭存活數量
+        /// </summary>
+        /// <param name="area"></param>
+        /// <returns></returns>
+        private static int GetAroundAliveCount(bool[,] area)
+        {
+            int count = 0;
+            foreach (var status in area)
+            {
+                if (status) count++;
+            }
+
+            if (area[1, 1]) count -= 1;
+            return count;
+        }
         
         public static bool TimePassRule(bool[,] area)
         {
-            // TODO: fill your code here
-            return area[1, 1];
+            int aliveCount = GetAroundAliveCount(area);
+            return IsAlive(area)
+                ? KeepAliveCount.Contains(aliveCount)
+                : RebornCount == aliveCount;
         }
 
 
